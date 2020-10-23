@@ -13,6 +13,7 @@
 \allsectionsfont{\normalsize\bfseries}
 \usepackage{multicol}
 \usepackage{changepage}
+\usepackage{breakcites}
 
 \newcommand{\ann}[1]{
 \begin{adjustwidth}{0.5cm}{}
@@ -34,7 +35,7 @@ TBD
 
 \section*{INTRODUCTION}
 
-Bayesian Evolutionary Analysis Sampling Trees (BEAST) is a software package [\cite{beast110}] that attempts to provide a general framework for parameter estimation and hypothesis testing of evolutionary models from molecular sequence data [\cite{beastOG,beast17,beast110}]. The software uses a combination of complementary models to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences. BEAST has been widely used in the field of phylodynamics and molecular epidemiology of infectious to answer epidemiological questions from molecular data. Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
+Bayesian Evolutionary Analysis Sampling Trees (BEAST) is a software package \cite{beast110} that attempts to provide a general framework for parameter estimation and hypothesis testing of evolutionary models from molecular sequence data [\cite{beastOG,beast17,beast110}]. The software uses a combination of complementary models to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences. BEAST has been widely used in the field of phylodynamics and molecular epidemiology of infectious to answer epidemiological questions from molecular data. Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
 
 A specific type of analysis that can be performed within this context is pathogen phylogeography. This analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population as annotated time-scaled phylogenies conditioned on the observed locations at the tips. Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages [\cite{hiv}] and characterizing pathogen spread to inform public health response [\cite{ebola}]. \\
 
