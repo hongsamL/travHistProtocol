@@ -35,11 +35,11 @@ TBD
 
 \section*{INTRODUCTION}
 
-Bayesian Evolutionary Analysis Sampling Trees (BEAST) is a software package \cite{beast110} that attempts to provide a general framework for parameter estimation and hypothesis testing of evolutionary models from molecular sequence data \cite{beastOG,beast17,beast110}. The software uses a combination of complementary models to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences. BEAST has been widely used in the field of phylodynamics and molecular epidemiology of infectious to answer epidemiological questions from molecular data. Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
+Bayesian Evolutionary Analysis Sampling Trees (BEAST) is a software package \cite{beast110} that attempts to provide a general framework for parameter estimation and hypothesis testing of evolutionary models from molecular sequence data \cite{beastOG,beast17,beast110}. The software uses a combination of complementary models to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences. Inference is done in a Bayesian framework using Markov Chain Monte Carlo (MCMC). BEAST has been widely used in the field of phylodynamics and molecular epidemiology of infectious disease to obtain insights from molecular data. Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
 
-A specific type of analysis that can be performed within this context is pathogen phylogeography. This analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population as annotated time-scaled phylogenies conditioned on the observed locations at the tips. Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}. \\
+A specific type of analysis that can be performed within this context is pathogen phylogeography. This type of analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of annotated time-scaled phylogenies. Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}. \\
 
-We can use BEAST to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA). This method estimates the probability of pathogen transmission between two locations using models analogous to those used for nucleotide substitution \cite{dta}. Recently, a new approach has been developed to integrate individual travel history data to DTA reconstructions in order to obtain more realistic reconstructions of pathogen spread that mitigate sampling bias \cite{travhist}. \\
+We can use BEAST to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA). This method estimates the probability of pathogen transmission between two locations using models analogous to those used for nucleotide substitution \cite{dta}. Recently, a new approach has been developed to integrate individual travel history data to DTA reconstructions in order to obtain more realistic reconstructions of pathogen spread and  mitigate sampling bias \cite{travhist}. \\
 
 In this unit, we provide four related protocols to reproduce the travel history aware phylogeographic reconstructions performed in Lemey et. al, 2020. Protocol 1 introduces the GISAID database and gives the steps necessary to construct a SARS-CoV-2 multiple sequence alignment from sequences in GISAID. In Protocol 2, we provide instructions on how to set up a generalized linear model analysis for discrete state phylogegraphic inference using BEAUti. Protocol 3 introduces an automated script to modify a BEAUti generated XML file to incorporate travel history data. Finally in Protocol 4, we guide the user through the process of visualizing individual geographic histories over the entire posterior of trees sampled with BEAST.
 
@@ -61,13 +61,15 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 \hspace{0.5cm}The latest Aliview \cite{aliview} version (v1.26 used in this protocol).
 
 \subsubsection*{Files}
-\hspace{0.5cm}A list of GISAID accessions desired (example available at\code{github})
+\hspace{0.5cm}A list of GISAID accessions desired 
 
-\hspace{0.5cm}A FASTA file file with the SARS-CoV-2 reference genome UTR sequences (\code{github})\\
+\hspace{0.5cm}A FASTA file file with the SARS-CoV-2 reference genome UTR sequences\\
+
+\ann{Example files can be found at \code{githublink}}
 
 1. Search and download the desired sequences in the GISAID database \\
 
-Log in into GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to access a table with all available SARS-CoV-2 sequences in the database. To bulk download sequences by accession ID, click on the Fulltext{\Large $\blacktriangleup$} button, write your comma-separated list of accessions in the search box, and download the FASTA sequences using the download button. In this example, we will save the sequences as\code{gisaid\_selection.fasta}.\\
+Log in into GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to access a table with all available SARS-CoV-2 sequences in the database. To bulk download sequences by accession ID, click on the Fulltext{\Large $\blacktriangleup$} button, paste your comma-separated list of accessions in the search box, and download the FASTA sequences using the download button. In this example, we will save the sequences as\code{gisaid\_selection.fasta}.\\
 
 \ann{We can also use the \code{EpiCoV} Browse portal to download a custom selection of genomes. On the header section of the table you will see multiple search fields and drop-down menus to filter sequences according to you desired criteria.}
 
@@ -86,15 +88,13 @@ mafft --thread -1 --nomemsave gisaid_selection.fasta > gisaid_aln.fasta
 
 \ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' untranslated regions (UTR) of the SARS-CoV-2 genome. We do this so that we can later trim these regions from the final alignment. We concatenate these sequences to the multi-fasta containing our genomes of interest, and align all sequences using MAFFT.}
 
-4. Manually trim UTR regions in the MSA using Aliview\\
+4. Manually trim UTRs in the MSA using Aliview\\
 
-In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu    . Remove the now-empty reference sequences and save the trimmed MSA.\\
-
-\ann{Once we obtain our alignment from MAFFT, we visualize the MSA in Aliview to identify the sites corresponding to the UTR regions.  Once this is done, we can remove the now empty reference sequences and save the trimmed MSA.}
+In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu. Remove the now-empty reference sequences and save the trimmed MSA.\\
 
 \section*{PROTOCOL 2: SETTING UP A DISCRETE TRAIT PHYLOGEOGRAPHIC RECONSTRUCTION IN BEAUTI}
 
-The travel history approach is an extension of traditional discrete trait analysis (DTA) available in BEAST. BEAUti is an interactive graphical application for designing your analysis and generating the a BEAST XML file which will be used to run the analysis. \\ 
+The travel history approach is an extension of traditional DTA available in BEAST. BEAUti is an interactive graphical application for designing your analysis and generating the a BEAST XML file which will be used to run the MCMC. \\ 
 
 This protocol describes how to set up a generalized linear model (GLM) variant of the DTA analysis using BEAST. In this example, we will use the MSA generated in Protocol 1 to set up a GLM phylogeographic reconstruction using a flight matrix and a distance matrix as covariates (See \cite{travhist} for details).
 
@@ -120,19 +120,19 @@ Load the MSA into BEAUti by selectin Import Data from the File menu. You can als
 
 2. Specify the tip sampling dates\\
 
-Select the Tips tab and check the ``Use tip dates" box. By default all taxa will show as having a date of zero (i.e. all sequences were sampled at the same time in the present). To specify each sampling date, select ``Import Dates" and load the metadata file with the "Parse calendar dates with variable precision" option. This allows for taxon dates of different resolutions (e.g. Year-Month-Day vs Year-Month). Estimate the sampling dates for the taxa without day-level resolution by selecting Sampling uniformly from precision in the Tip date sampling menu at the bottom of the table. \\
+Select the Tips tab and check the ``Use tip dates" box. By default all taxa will show as having a date of zero (i.e. all sequences were sampled at the same time in the present). To specify each sampling date, select ``Import Dates" and load the metadata file with the ``Parse calendar dates with variable precision" option. This allows for taxon dates to have different degrees of resolutions (e.g. Year-Month-Day vs Year-Month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision| in the ``Tip date sampling" menu at the bottom of the table. \\
 
-\ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on Parse Dates, and specify the rules for delimiting the date from all taxon labels.}
+\ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Parse Dates", and specify the rules for delimiting the date from all taxon labels.}
 
 3. Specify the sampling location of each taxa as a discrete trait.\\
 
-Click on the Traits tab. To associate each taxon with a sampling location, click on ``Import traits" and select the metadata file. This will create a new trait for each column on the metadata file. Delete all non-relevant traits by clicking on the ``-" button at the bottom-left of the page (keep only the "location" trait for this example). Select the desired trait and click on ``create partition from trait". A new partition containing the trait data will be created under the Partitions tab (SCREENSHOT?).\\
+Click on the Traits tab. To associate each taxon with a sampling location, click on ``Import traits" and select the metadata file. This will create a new trait for each column on the metadata file. Delete all non-relevant traits by clicking on the ``-" button at the bottom-left of the page (keep only the "location" trait for this example). Select the desired trait and click on ``create partition from trait". A new partition containing the trait data will be created under the Partitions tab.\\
 
-\ann{It is also possible to add a discrete trait without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on Add Trait to create a new trait with a corresponding data partition. Select all taxa and click on Guess trait values to parse the trait values from the taxon labels.}
+\ann{It is also possible to add a discrete trait without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Add Trait" to create a new trait with a corresponding data partition. Select all taxa and click on ``Guess trait" values to parse the trait values from the taxon labels.}
 
 4. Set up the nucleotide and trait substitution models\\
 
-Click on the ``Sites| tab. Following Lemey et al. we will specify a HKY+Gamma nucleotide substitution model, and a GLM for the location trait. Load the covariates by clicking on Setup GLM and Import Predictors. Check the Log and Std boxes to log-transform and standardize the GLM predictors.\\
+Click on the ``Sites" tab. Following Lemey et al. we will specify a HKY+Gamma nucleotide substitution model, and a GLM for the location trait. Load the covariates by clicking on Setup GLM and Import Predictors. Check the Log and Std boxes to log-transform and standardize the GLM predictors.\\
 
 \ann{In this context, predictor and covariate are used interchangeably. By default each predictor name will be the same as the name of the file it originates from. You can specify new names by double clicking on each name. Non-pairwise covariates can also be setup as origin and destination predictors in this window.}
 
@@ -144,9 +144,9 @@ Following Lemey et al., click on the ``Clocks" tab to specify a strict clock mod
 
 6. Specify a demographic model\\
 
-Click on the ``Trees" tab to specify the Tree prior. Following Lemey et al., 2020 specify an exponential growth coalescent model parametrized with a Growth Rate parameter. \\
+Click on the ``Trees" tab to specify the Tree prior. Following Lemey et al., 2020 specify an exponential growth coalescent model parameterized with a Growth Rate parameter. \\
 
-\ann{By default, BEAST will initialize the analysis with a randomly generated starting tree. It is also possible to start the analysis from a user-specified time-scaled phylogeny. This is usually done to reduce the burn-in time required for the tree topologies to converge. Specify a starting tree by clicking on Import Data under the File menu, to load a Nexus tree into BEAUti.}
+\ann{By default, BEAST will initialize the analysis with a randomly generated starting tree. It is also possible to start the analysis from a user-specified time-scaled phylogeny. This is usually done to reduce the burn-in time required for the tree topologies to converge. Specify a starting tree by clicking on ``Import Data" under the ``File" menu, to load a Nexus tree into BEAUti.}
 
 7. Set up the ancestral state reconstruction for the location trait\\
 
@@ -168,13 +168,13 @@ Click on the ``Operators" tab. Identify the tip-date sampling operators on the t
 
 Click on the ``MCMC" tab. Set ``Length of chain" to 100,000,000 states and ``Log parameters every" to 50,000 states. This will thin the MCMC results so that only 2,000 samples are collected by the end of the run. Set your file name stem as the desired output file name (e.g. \texttt{282\_GISAID\_sarscov2}), and click on ``Generate BEAST File" to create a BEAST XML file.\\
 
-\ann{Thinning consists on discarding all but the nth sample from an MCMC run. This subsampling technique is done to decrease the autocorrelation in the samples collected and reduce the file size of the output. This is important since Bayesian phylogenetic analyses often require very long chains, and storing every single state would be computationally prohibitive.}
+\ann{Thinning consists on discarding all but the nth sample from an MCMC run. This subsampling technique is done to decrease the autocorrelation in the samples collected and reduce the file size of the output. This is important since Bayesian phylogenetic analyses often require very long chains, and storing every single state would be prohibitive for file storage.}
 
 \section*{PROTOCOL 3: PHYLOGEOGRAPHIC RECONSTRUCTION INCORPORATING TRAVEL HISTORY INFORMATION}
 
-Phylogeographic reconstruction using DTA has been show to be sensitive to spatiotemporal sampling bias. The ancestral reconstruction of locations will depend on the availability of samples from each location. In practice, this means that over/undersampling of sequences from a given location can greatly impact the ancestral locations being reconstructed. One way to mitigate sampling bias is by incorporating travel history information. Travel history data can be used to correct for gaps in sampling by allowing for ancestral nodes to be in a given location even when sequences are not available. \\
+Phylogeographic reconstruction using DTA has been show to be sensitive to spatiotemporal sampling bias. The ancestral reconstruction of locations will depend on the availability of samples from each location. In practice, this means that over/undersampling of sequences from a given location can greatly impact the ancestral locations being reconstructed. One way to mitigate sampling bias is by incorporating travel history information. Travel history data can be used to correct for gaps in sampling by allowing for ancestral nodes to be in a given location even when sequences are not available.\\
 
-This protocol explains how augment a DTA analysis generated in BEAUti by incorporating travel history data. In this example, we will use the XML file generated in Protocol 2 and modify it to include individual travel history data (See Lemey et. al, 2020 for details).
+This protocol explains how augment a DTA analysis generated in BEAUti by incorporating travel history data. In this example, we will use the XML file generated in Protocol 2 and modify it to include individual travel history data (See \cite{travhist} for details).
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
@@ -194,7 +194,7 @@ XML file for a DTA analysis set up in BEAUti \\
 Travel history metadata CSV file \\
 Augmented covariate files \\
 
-\ann{Example files are provided in the repository {\upshape\url{github}}. The example in this protocol assumes an XML file for a GLM phylogeographic reconstruction with travel history locations without any sequence samples. Covariate files augmented to include the new locations are thus required to accommodate the increase in state space.}
+\ann{Example files are provided in the repository {\upshape\url{github}}. The example in this protocol assumes an XML file for a GLM phylogeographic reconstruction with new travel history locations not present in the original BEAUti XML. Covariate files augmented to include the new locations are thus required to accommodate for the increase in state space.}
 
 1. Update the BEAST XML file to incorporate travel history data
 \begin{verbatim}
@@ -205,7 +205,7 @@ python add_travel_history.py --xml 282_GISAID_sarscov2.xml
         --out 282_GISAID_sarscov2_travelHist.xml
 \end{verbatim}
 
-\ann{Although this example uses a GLM-DTA analysis, the add\_travel\_history.py script also works for symmetric and asymmetric DTA analyses. For such cases, run the same command without the covariate flags. This script also requires for the travel history metadata to follow a specific format. The metadata file must contain the following columns: ``name"  (taxon name), ``travelHistory"  (travel location), ``travelDays"  (date of travel as days before to sampling date), ``priorMean"  and ``priorSTDEV"  (prior specifications for the mean and standard deviation of a Normal prior on travel dates when exact data is unavailable).}
+\ann{Although this example uses a GLM-DTA analysis, the\code{add\_travel\_history.py} script also works for symmetric and asymmetric DTA analyses. For such cases, run the same command without the\code{--covariate} flags. This script also requires for the travel history metadata to follow a specific format. The metadata file must contain the following columns: ``name"  (taxon name), ``travelHistory"  (travel location), ``travelDays"  (date of travel as days before to sampling date), ``priorMean"  and ``priorSTDEV"  (prior specifications for the mean and standard deviation of a Normal prior on travel dates when exact data is unavailable).}
 
 2. Start the BEAST MCMC sampler
 \begin{verbatim}
@@ -216,7 +216,7 @@ java -cp beast.jar dr.app.beast.BeastMain -seed 2020
          282_GISAID_sarscov2_travelHist.xml
 \end{verbatim}
 
-\ann{Here, we execute BEAST on the command-line using the latest jar file. We specify a starting seed with the -seed flag, and use the -beagle\_cuda flag to accelerate the likelihood computations using a GPU. This option is recommended when available, as using a GPU reduces runtime by accelerating likelihood computations when performing phylogeographical analyses on large datasets. We also take advantage of the BEAST checkpointing functionality to save a snapshot of the MCMC run into the travelHist.checkpoint file every 1,000,000 states. This allows us to resume the analysis from the checkpoint in case the run becomes interrupted, or more iterations of the chain are required.}
+\ann{Here, we execute BEAST on the command-line using the latest jar file. We specify a starting seed with the -seed flag, and use the \code{-beagle\_cuda} flag to accelerate the likelihood computations using a GPU. This option is recommended when available, as using a GPU reduces runtime by accelerating likelihood computations when performing phylogeographical analyses on large datasets. We also take advantage of the BEAST checkpointing functionality to save a snapshot of the MCMC run into the travelHist.checkpoint file every 1,000,000 states. This allows us to resume the analysis from the checkpoint in case the run becomes interrupted, or more iterations of the chain are required.}
 
 \section*{PROTOCOL 4: VISUALIZING TAXON-SPECIFIC SPATIAL TRAJECTORIES}
 \subsection*{\textbf{\textit{Necessary Resources}}}
@@ -232,15 +232,15 @@ Trees output from a BEAST travel history DTA \\
 
 1. Extract all Markov jump histories for an isolate of interest
 \begin{verbatim}
-java -cp beast.jar dr.app.tools.TaxaMarkovJumpHistoryAnalyzer \ 
-        -taxaToProcess "hCoV-19/Australia/NSW05/2020|EPI_ISL_412975|2020-02-28" \ 
-        -stateAnnotation location \
-        -burnin 100 \ 
-        -msrd 2020.1748633879781 \ 
+java -cp beast.jar dr.app.tools.TaxaMarkovJumpHistoryAnalyzer 
+        -taxaToProcess "hCoV-19/Australia/NSW05/2020|EPI_ISL_412975|2020-02-28" 
+        -stateAnnotation location
+        -burnin 100
+        -msrd 2020.1748633879781
          282_GISAID_GLM.location.history.trees EPI_ISL_412975_MJhist.csv
 \end{verbatim}
 
-\ann{The BEAST jar file packages a number of standalone tools that can be accessed using the -cp flag in Java. Here, we use the TaxaMarkovJumpHistoryAnalyzer tool to extract all Markov jump histories for isolate EPI\_ISL\_412975 , into a CSV file. This tool takes a trees file with complete state change history as an input, and outputs all spatial trajectories for some taxon/taxa. We specify the desired taxon labels through the -taxaToProcess  flag, and specify the annotation name of the discrete trait which was reconstructed using -stateAnnotation.  We can also remove a burn-in number of trees using the -burnin  flag, and scale the output results to reflect chronological time instead of node heights using the -msrd  flag by specifying the most recent sampling date. An example output file can be found in LINK}
+\ann{The BEAST jar file packages a number of standalone tools that can be accessed using the -cp flag in Java. Here, we use the TaxaMarkovJumpHistoryAnalyzer tool to extract all Markov jump histories for isolate EPI\_ISL\_412975 , into a CSV file. This tool takes a trees file with complete state change history as an input, and outputs all spatial trajectories for some taxon/taxa. We specify the desired taxon labels through the\code{-taxaToProcess} flag, and specify the annotation name of the discrete trait which was reconstructed using \code{-stateAnnotation}.  We can also remove a burn-in number of trees using the \code{-burnin} flag, and scale the output results to reflect chronological time instead of node heights using the \code{-msrd}  flag by specifying the most recent sampling date. An example output file can be found in \code{LINK}}
 
 2. Load spatial trajectories into R
 \begin{verbatim}
@@ -281,7 +281,7 @@ plotPaths(travelHistPaths$paths, locationMap = locationMap,
 
 \section*{GUIDELINES FOR UNDERSTANDING RESULTS}
 
-The BEAST software package offers a flexible approach for combining demographic, molecular clock, nucleotide and trait models to infer time-scaled phylogenies. This is done under the Bayesian framework, using MCMC to sample trees along with their corresponding model parameters from the joint posterior. Protocols 2 and 3 are used to set up a model and collect samples using BEAST. Phylogenies drawn from the posterior are stored in a \code{.trees} file and samples from the remaining parameters are stored in a \code{.log} file. Here we present some of the standard tools used to interpret the outputs of a BEAST run.
+The BEAST software package offers a flexible approach for combining demographic, molecular clock, nucleotide and trait evolution models to infer time-scaled phylogenies. This is done under the Bayesian framework, using MCMC to sample trees along with their corresponding model parameters from the joint posterior. Protocols 2 and 3 are used to set up a model and collect samples using BEAST. Phylogenies drawn from the posterior are stored in a \code{.trees} file and samples from the remaining parameters are stored in a \code{.log} file. Here we present some of the standard tools used to interpret the outputs of a BEAST run.
 
 \subsection*{Assessing convergence}
 
@@ -302,13 +302,13 @@ In some cases, the posterior support for all nodes in a tree is such that many t
 \section*{COMMENTARY}
 \subsection*{Background Information}
 
-Methods for phylogeographic inference can be broadly categorized into two approaches depending on the assumptions used to model the spatial spread of a pathogen. Coalescent approaches model movement in terms of a migration matrix, and relate migration rates with a location's population size under the structured coalescent \cite{basta,mascot}. On the other hand, diffusion approaches considers sampling locations as observed traits independent from the tree generating process, and model movement across space as a continuous-time Markov chain \cite{dta,rw}.  While coalescent approaches are theoretically a more robust approach, the lack of computationally efficient implementations (especially for larger datasets) has made CTMC methods more widely adopted. Currently BEAST v1.10.5 offers only implementations for CTMC models.
+Methods for phylogeographic inference can be broadly categorized into two approaches depending on the assumptions used to model the spatial spread of a pathogen. Coalescent approaches model movement in terms of a migration matrix, and relate migration rates with a location's population size under the structured coalescent \cite{basta,mascot}. On the other hand, diffusion approaches considers sampling locations as observed traits independent from the tree generating process, and model movement across space with a continuous-time Markov chain (CTMC) \cite{dta,rw}.  While coalescent approaches are theoretically a more robust, the lack of computationally efficient implementations (especially for larger datasets) has made diffusion methods more widely adopted. Currently BEAST v1.10.5 offers only implementations for CTMC models.
 
-CTMC methods can be further divided into discrete and continuous depending on the spatial resolution being considered. Discrete locations are modeled using discrete trait analysis (DTA), with transition rates between locations in the form of a CTMC matrix analogous to those used for nucleotide substitution \cite{dta}. In contrast, continuous locations are modeled using Brownian diffusion based random-walk models \cite{rw}. Much of the genomic data collected has a spatial resolution coarser than latitude and longitude, which makes DTA the only practical approach to study the spread of an epidemic. 
+Diffusion methods can be further divided into discrete and continuous depending on the spatial resolution being considered. Discrete locations are modeled using discrete trait analysis (DTA), with transition rates between locations in the form of a CTMC matrix analogous to those used for nucleotide substitution \cite{dta}. In contrast, continuous locations are modeled using Brownian diffusion based random-walk models \cite{rw}. Much of the genomic data collected has a spatial resolution coarser than latitude and longitude, which makes DTA the only practical approach to study the spread of an epidemic. 
 
 Under the DTA formulation, movement between K discrete locations is parameterized in terms of a $K \times K$ infinitesimal rate matrix $\Lambda$, where $\Lambda_{ij}$ is the instantaneous movement rate from location $i$ to $j$. This model has been extended to allow for symmetrical and asymmetrical transition rates, and uses Bayesian Stochastic Search Variable Selection (BSSVS) to limit the number of rates to only those that adequately explain the phylogenetic diffusion process. An alternative formulation of this model parameterizes the rate matrix using a generalized linear model \cite{glm}. Here, the transition rates are defined as a linear combination of $P$ of potential explanatory predictors $(x_{ij1}, \dots, x_{ijP})$, with corresponding coefficients $(\beta_1, ..., \beta_P )$ and indicator variables $(\delta_1, ..., \delta_P )$ such that $Log(\Lambda_{ij}) = \sum_{p=1}^P \beta_p \delta_p x_{ijp}$. This model specification allows us to use BSSVS to explore the space of $2^P$ predictor combinations and obtain a posterior probability on the indicator variables to determine the support for inclusion of reach predictor in the model.
 
-Furthermore, incorporating travel history data can be done to any of the DTA variants by augmenting augments the available dataset to include ancestral nodes associated with a known state but not with a known sequence \cite{travhist}. Ambiguous ancestral locations can be allowed by integrating over the all possible locations with equal or user specified weights \cite{ambig}.
+Furthermore, incorporating travel history data can be done to any of the DTA variants by augmenting augments the available dataset to include ancestral nodes associated with a known state but not with a known sequence \cite{travhist}. Ambiguous ancestral locations can also be allowed by integrating over the all possible locations with equal or user specified weights \cite{ambig}.
 
 \section*{CRITICAL PARAMETERS AND TROUBLESHOOTING}
 A critical assumption for any BEAST analysis is that of measurably evolving populations. Measurably evolving populations \cite{mep1,mep2} refer to time-stamped sequence data where a sufficient amount of molecular evolution has occurred throughout the sampling period to establish a statistical relationship between genetic divergence and time. A dataset conforming to this criteria is said to contain sufficient temporal signal. A lack of temporal signal will result in ultimately flawed analyses with unreliable divergence time estimates. Popular ways to assess temporal signal include doing a root-to-tip regression of genetic divergence and sampling times on a maximum likelihood tree \cite{tempest} and permutating tip date labels through date-randomization \cite{tipdate}. Recently, a formal way to assess temporal signal has been developed under a Bayesian framework using model comparison through Bayes factors \cite{bets}. In cases where the temporal signal is not enough, one can resort to adding more data to increase temporal coverage or using prior knowledge to inform the molecular clock rate or the time to the most recent common ancestor.
