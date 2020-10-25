@@ -3,8 +3,11 @@
 \usepackage[a4paper,margin=1.5in]{geometry}
 \setlength{\parindent}{0pt}
 
-\title{Using BEAST to Reconstruct Pathogen Spread Incorporating Travel Data}
+%\title{Using BEAST to Reconstruct Pathogen Spread Incorporating Individual Travel Histories}
+%GB: I would put BEAST more towards the end (as below)
+\title{Reconstructing Pathogen Spread by Incorporating Individual Travel Histories in BEAST}
 \author{Samuel L. Hong}
+%GB: other authors: MAS, GB, PL? anyone else?
 
 \usepackage{graphicx}
 \usepackage{url}
@@ -35,23 +38,40 @@ TBD
 
 \section*{INTRODUCTION}
 
-Bayesian Evolutionary Analysis Sampling Trees (BEAST) is a software package \cite{beast110} that attempts to provide a general framework for parameter estimation and hypothesis testing of evolutionary models from molecular sequence data \cite{beastOG,beast17,beast110}. The software uses a combination of complementary models to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences. Inference is done in a Bayesian framework using Markov Chain Monte Carlo (MCMC). BEAST has been widely used in the field of phylodynamics and molecular epidemiology of infectious disease to obtain insights from molecular data. Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
+Bayesian Evolutionary Analysis Sampling Trees (BEAST) \cite{beast110} is a software package that provides a general framework for phylogenetic inference and evolutionary hypothesis testing using molecular sequence data \cite{beastOG,beast17,beast110}.
+As such, BEAST employs a combination of different types of models (including but not limitied to molecular clock models, coalescent models and substitution models) to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences.
+Phylogenetic, phylogeographic and phylodynamic inference is performed using Bayesian inference through Markov chain Monte Carlo (MCMC) and in doing so makes use of BEAGLE, a high-performance computational library for statistical phylogenetics. %GB: insert BEAGLE citation
+BEAST is widely used in the field of phylodynamics and molecular epidemiology of infectious disease to obtain insights from molecular data through an expanding array of statistical models and estimation procedures. \\
+%Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
 
-A specific type of analysis that can be performed within this context is pathogen phylogeography. This type of analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of annotated time-scaled phylogenies. Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}. \\
+A specific type of analysis that can be performed within this context is pathogen phylogeographic inference.
+This type of analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of annotated time-scaled phylogenies.
+%GB: I would put another sentence here mentioning the GLM paper, the importance of such a GLM, and then use the application to H3N2 in that paper to transition to the next line of text.
+Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}. \\
 
-We can use BEAST to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA). This method estimates the probability of pathogen transmission between two locations using models analogous to those used for nucleotide substitution \cite{dta}. Recently, a new approach has been developed to integrate individual travel history data to DTA reconstructions in order to obtain more realistic reconstructions of pathogen spread and  mitigate sampling bias \cite{travhist}. \\
+We can use BEAST to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA).
+This method estimates the probability of pathogen transmission between two locations using models analogous to those used for characterising nucleotide substitution probabilities \cite{dta}.
+Recently, a new approach has been developed to integrate individual travel history data into DTA reconstructions in order to obtain more realistic reconstructions of pathogen spread and mitigate sampling bias \cite{travhist}. \\
 
-In this unit, we provide four related protocols to reproduce the travel history aware phylogeographic reconstructions performed in Lemey et. al, 2020. Protocol 1 introduces the GISAID database and gives the steps necessary to construct a SARS-CoV-2 multiple sequence alignment from sequences in GISAID. In Protocol 2, we provide instructions on how to set up a generalized linear model analysis for discrete state phylogegraphic inference using BEAUti. Protocol 3 introduces an automated script to modify a BEAUti generated XML file to incorporate travel history data. Finally in Protocol 4, we guide the user through the process of visualizing individual geographic histories over the entire posterior of trees sampled with BEAST.
+We here provide four related protocols to reproduce the travel history-aware phylogeographic reconstructions performed in Lemey et. al, 2020. %GB replace 'Lemey et al.' by an actual citation?
+Protocol 1 introduces the GISAID database and provides the required steps to construct a SARS-CoV-2 multiple sequence alignment from the sequences available in GISAID.
+In Protocol 2, we provide instructions on how to set up a generalized linear model analysis for discrete state phylogegraphic inference using BEAUti.
+Protocol 3 introduces an automated script to modify a BEAUti-generated XML file to incorporate travel history data, which can subsequently be run using BEAST.
+Finally in Protocol 4, we guide the user through the process of visualizing individual geographic dispersal histories over the posterior distribution of trees, as sampled during BEAST's estimation process.
 
-\section*{PROTOCOL 1: CONSTRUCTING A SARS-CoV-2 MSA FROM GISAID SEQUENCES}
 
-The first step in any phylogenetic analysis is to obtain a high-quality multiple sequence alignment (MSA). For SARS-CoV-2 analyses, the largest repostiory of genomes is available through the GISAID database. The GISAID initiative provides a plataform to openly share genomic data of influenza and SARS-CoV-2 viruses \cite{gisaid}. Access to the database is free (\url{https://www.gisaid.org/registration/register/}), but requires the user to register and agree to GISAID's terms for access.\\
+\section*{PROTOCOL 1: CREATING A SARS-CoV-2 MSA USING SEQUENCES FROM GISAID}
 
-This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloaded from GISAID. In this example, we will construct an alignment for the 282-taxa dataset used in Lemey et. al, 2020.
+The first step in any phylogenetic analysis is to obtain a high-quality multiple sequence alignment (MSA).
+For SARS-CoV-2 analyses, the largest repository of genomes is available through the GISAID database.
+The GISAID initiative provides a platform to openly share genomic data of influenza viruses as well as SARS-CoV-2 \cite{gisaid}.
+Access to the database is free (\url{https://www.gisaid.org/registration/register/}), but requires the user to register and agree to GISAID's terms of use in order to obtain access.\\
+
+This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloaded from GISAID. In this example, we will construct an alignment for the 282-taxa dataset used in Lemey et. al, 2020. %GB: replace 'Lemey et al.' by an actual citation?
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
-\hspace{0.5cm}Standard workstation running Linux, MacOS, or Windows. 
+\hspace{0.5cm}Standard workstation running Linux, MacOS or Windows. 
 
 \subsubsection*{Software}
 \hspace{0.5cm}A modern web browser (Google Chrome and Mozilla Firefox recommended).
@@ -61,11 +81,11 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 \hspace{0.5cm}The latest Aliview \cite{aliview} version (v1.26 used in this protocol).
 
 \subsubsection*{Files}
-\hspace{0.5cm}A list of GISAID accessions desired 
+\hspace{0.5cm}A list of GISAID accession numbers. 
 
-\hspace{0.5cm}A FASTA file file with the SARS-CoV-2 reference genome UTR sequences\\
+\hspace{0.5cm}A FASTA file file with the SARS-CoV-2 reference genome UTR sequences.\\
 
-\ann{Example files can be found at \code{githublink}}
+\ann{Example files can be found at \code{githublink}} %GB: why is this here?
 
 1. Search and download the desired sequences in the GISAID database \\
 
@@ -73,7 +93,7 @@ Log in into GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab t
 
 \ann{We can also use the \code{EpiCoV} Browse portal to download a custom selection of genomes. On the header section of the table you will see multiple search fields and drop-down menus to filter sequences according to you desired criteria.}
 
-2. Remove white-spaces from the FASTA file
+2. Remove white-spaces from the FASTA file %GB: need to mention any differences for bash or shell scripting?
 \begin{verbatim}
 sed -i.bkp "s/ /_/g" gisaid_selection.fasta 
 \end{verbatim}
