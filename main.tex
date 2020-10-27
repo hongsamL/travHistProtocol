@@ -38,6 +38,8 @@ TBD
 
 \section*{INTRODUCTION}
 
+%GB: Throughout this protocol, we need to keep in mind that not everyone is an expert on how to use BEAST, so let's write it for people who may have used BEAST already but don't know all the nuts and bolts and don't know how to read BEAST XML files.
+
 Bayesian Evolutionary Analysis Sampling Trees (BEAST) \cite{beast110} is a software package that provides a general framework for phylogenetic inference and evolutionary hypothesis testing using molecular sequence data \cite{beastOG,beast17,beast110}.
 As such, BEAST employs a combination of different types of models (including but not limitied to molecular clock models, coalescent models and substitution models) to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences.
 Phylogenetic, phylogeographic and phylodynamic inference is performed using Bayesian inference through Markov chain Monte Carlo (MCMC) and in doing so makes use of BEAGLE, a high-performance computational library for statistical phylogenetics. %GB: insert BEAGLE citation
@@ -89,7 +91,7 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 
 1. Search and download the desired sequences in the GISAID database \\
 
-Log in into GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to access a table with all available SARS-CoV-2 sequences in the database. To bulk download sequences by accession ID, click on the Fulltext{\Large $\blacktriangleup$} button, paste your comma-separated list of accessions in the search box, and download the FASTA sequences using the download button. In this example, we will save the sequences as\code{gisaid\_selection.fasta}.\\
+Log in into GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to access a table with all available SARS-CoV-2 sequences in the database. To bulk download sequences by accession ID, click on the Fulltext{\Large $\blacktriangleup$} button, paste your comma-separated list of accessions in the search box, and download the FASTA sequences using the download button. In this example, we will save the sequences as\code{gisaid\_selection.fasta}.\\ %GB: can we provide the list of accession numbers to replicate our analysis (and mention this here)?
 
 \ann{We can also use the \code{EpiCoV} Browse portal to download a custom selection of genomes. On the header section of the table you will see multiple search fields and drop-down menus to filter sequences according to you desired criteria.}
 
@@ -100,23 +102,30 @@ sed -i.bkp "s/ /_/g" gisaid_selection.fasta
 
 \ann{To avoid potential issues when parsing the FASTA headers, we replace all white-spaces in the file with underscores using \code{sed}.  We use the \code{-i} flag to find and replace the file in-place while keeping a backup of the original file.}
 
-3. Align the sequences
+3. Align the sequences using MAFFT
 \begin{verbatim}
 cat utr.fasta >> gisaid_selection.fasta
 mafft --thread -1 --nomemsave gisaid_selection.fasta > gisaid_aln.fasta
 \end{verbatim}
 
-\ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' untranslated regions (UTR) of the SARS-CoV-2 genome. We do this so that we can later trim these regions from the final alignment. We concatenate these sequences to the multi-fasta containing our genomes of interest, and align all sequences using MAFFT.}
+\ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' untranslated regions (UTR) of the SARS-CoV-2 genome.
+We do this so that we can later trim these regions from the final alignment.
+We concatenate these sequences to the FASTA file containing our genomes of interest, and align all sequences using MAFFT.} %GB: how about mentioning here how many positions are in this alignment (i.e. after running MAFFT)? could be useful for people going through the steps; alternatively, how about providing this alignment in supplementary material?
 
 4. Manually trim UTRs in the MSA using Aliview\\
 
-In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu. Remove the now-empty reference sequences and save the trimmed MSA.\\
+In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu. %GB: I think a screenshot (start of the alignment will suffice) could be useful here; if it's visually more appealing (i.e. depending on how it plays out with figure placement within the text), please also include a screenshot of the situation at the end of the alignment
+Remove the now-empty reference sequences and save the trimmed MSA.\\ %GB: it may also prove useful to explicitly mention here how many sites were trimmed at both ends of the alignment
 
 \section*{PROTOCOL 2: SETTING UP A DISCRETE TRAIT PHYLOGEOGRAPHIC RECONSTRUCTION IN BEAUTI}
 
-The travel history approach is an extension of traditional DTA available in BEAST. BEAUti is an interactive graphical application for designing your analysis and generating the a BEAST XML file which will be used to run the MCMC. \\ 
+Performing Bayesian phylogeographic inference while accommodating individual travel history data constitutes an extension of traditional Bayesian DTA available in BEAST. %GB: cite Lemey et al. 2009; I here use the term 'Bayesian DTA' instead of 'DTA', as the latter is not specific to BEAST in my opinion, i.e. you can do DTA using maximum likelihood
+BEAUti is an interactive graphical application enabling to design the analysis you want to perform in BEAST and generates an XML file that will serve as the input file for BEAST.
+This XML file contains all the required data, the models (and priors) that were selected in BEAUti, and the computational settings which will be used to run the MCMC algorithm that will collect samples of all relevant parameters (including the phylogenetic tree with annotated ancestral locations) from the posterior. \\ 
 
-This protocol describes how to set up a generalized linear model (GLM) variant of the DTA analysis using BEAST. In this example, we will use the MSA generated in Protocol 1 to set up a GLM phylogeographic reconstruction using a flight matrix and a distance matrix as covariates (See \cite{travhist} for details).
+This protocol describes how to set up a DTA analysis with a generalized linear model (GLM) extension to simultaneously reconstruct spatiotemporal history and test the contribution of potential predictors of spatial spread using BEAST. %GB: cite Lemey et al. 2014
+Such an approach enables parameterizing each rate of among-location movement in the phylogeographic model as a log linear function of various potential predictors.
+In this example, we will use the MSA generated in Protocol 1 to set up a DTA+GLM phylogeographic reconstruction using a flight matrix and a distance matrix as covariates (but see \cite{travhist} for more detailed information). %GB: can you add a bit more information on these 2 matrices? 'flight matrix' is very general, and which distances are being used in the distance matrix?
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
@@ -132,39 +141,54 @@ This protocol describes how to set up a generalized linear model (GLM) variant o
 
 \hspace{0.5cm}Covariate matrices in CSV format\\
 
-\ann{Example metadata and covariate files available at\code{gihutb}}
+\ann{Example metadata and covariate files available at\code{github}} %GB: provide an actual GitHub link + explain explicitly where these data came from (if some of them can easily be downloaded from a website, please mention this)
 
 1. Import the MSA into BEAUti\\
 
-Load the MSA into BEAUti by selectin Import Data from the File menu. You can also do this by dragging the fasta file into the box in the Partitions tab.\\
+Load the MSA into BEAUti by selecting Import Data from the File menu. You can also do this by dragging the FASTA file into the Partitions panel.\\
 
 2. Specify the tip sampling dates\\
 
-Select the Tips tab and check the ``Use tip dates" box. By default all taxa will show as having a date of zero (i.e. all sequences were sampled at the same time in the present). To specify each sampling date, select ``Import Dates" and load the metadata file with the ``Parse calendar dates with variable precision" option. This allows for taxon dates to have different degrees of resolutions (e.g. Year-Month-Day vs Year-Month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision| in the ``Tip date sampling" menu at the bottom of the table. \\
+Select the Tips tab and check the ``Use tip dates" box. By default all taxa will show as having a date of zero (i.e. all sequences were sampled at the same time in the present).
+To specify each sampling date, select ``Import Dates" and load the metadata file with the ``Parse calendar dates with variable precision" option. %GB: this is unclear to me; aren't the sampling times part of the sequence names/labels? If they're not, we should explain this in the text and write up what the data that you download from GISAID actually look like (let's do that). Why is there a need to load a metadata file?
+This allows for taxon dates to have different degrees of resolution (e.g. year-month-day vs. year-month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision| in the ``Tip date sampling" menu at the bottom of the table. \\
 
-\ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Parse Dates", and specify the rules for delimiting the date from all taxon labels.}
+\ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Parse Dates", and specify the rules for delimiting the date from all taxon labels.} %GB: maybe a good idea to cite my protocol paper for screenshots: https://academic.oup.com/mbe/article/36/11/2620/5541799 (Figure 2a)
 
-3. Specify the sampling location of each taxa as a discrete trait.\\
+3. Specify the sampling location of each taxa as a discrete trait\\
 
-Click on the Traits tab. To associate each taxon with a sampling location, click on ``Import traits" and select the metadata file. This will create a new trait for each column on the metadata file. Delete all non-relevant traits by clicking on the ``-" button at the bottom-left of the page (keep only the "location" trait for this example). Select the desired trait and click on ``create partition from trait". A new partition containing the trait data will be created under the Partitions tab.\\
+Click on the Traits tab.
+To associate each taxon with a sampling location, click on ``Import traits" and select the metadata file. %GB: we need to properly describe this metadata file. Is it the same one as for specifying the sampling times? Should we provide a screenshot of what it looks like?
+This will create a new trait for each column on the metadata file. Delete all non-relevant traits by clicking on the ``-" button at the bottom-left of the page (keep only the ``location'' trait for this example). Select the desired trait and click on ``create partition from trait". A new partition containing the trait data will be created under the Partitions tab.\\ %GB: perhaps we can here provide a composite figure (for this entire step of the protocol)? For example, what the metadata location data look like in the file, how to delete all the non-relevant traits, and what you should see after the partition has been created.
 
 \ann{It is also possible to add a discrete trait without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Add Trait" to create a new trait with a corresponding data partition. Select all taxa and click on ``Guess trait" values to parse the trait values from the taxon labels.}
 
 4. Set up the nucleotide and trait substitution models\\
 
-Click on the ``Sites" tab. Following Lemey et al. we will specify a HKY+Gamma nucleotide substitution model, and a GLM for the location trait. Load the covariates by clicking on Setup GLM and Import Predictors. Check the Log and Std boxes to log-transform and standardize the GLM predictors.\\
+Click on the ``Sites" tab. Following Lemey et al. (2020), %GB: replace this with an actual citation command
+we will specify an HKY+$\Gamma$ nucleotide substitution model, and a GLM for the location trait.
+Load the covariates by clicking on ``Setup GLM'' and ``Import Predictors''. %GB: this needs more information; what does the file with covariate data look like? Which format should be specified? How many lines, and what kind of information on each line?
+Check the ``Log'' and ``Std'' boxes to log-transform and standardize the GLM predictors.\\
 
-\ann{In this context, predictor and covariate are used interchangeably. By default each predictor name will be the same as the name of the file it originates from. You can specify new names by double clicking on each name. Non-pairwise covariates can also be setup as origin and destination predictors in this window.}
+\ann{In this context, the terms `predictor' and `covariate' are used interchangeably.
+By default, each predictor name will be the same as the name of the file it originates from. %GB: give an explicit example for this particular example; this paragraph is quite general/generic at the moment
+You can specify new names by double clicking on each name.
+Non-pairwise covariates can also be setup as origin and destination predictors in this window.}
 
 5. Specify a clock model\\
 
-Following Lemey et al., click on the ``Clocks" tab to specify a strict clock model for both the nucleotide and trait partitions.\\
-
-\ann{BEAST analyses operate under the assumption of a molecular clock. For this to hold valid, there needs to be enough temporal signal in the data (See Critical parameters and troubleshooting). For more information on the different molecular clock models available in BEAST see \code{http://beast.community/clocks}}.\\
+Following the model specifications in Lemey et al. (2020), %GB: replace this with an actual citation command
+click on the ``Clocks" tab to specify a strict clock model for both the nucleotide and trait partitions.\\
+\ann{BEAST analyses operate under the assumption of a molecular clock to estimate time-stamped phylogenies from the molecular sequence data and associated sampling times.
+For this to hold valid, there needs to be sufficient temporal signal in the data (see the section \textbf{Critical parameters and troubleshooting}).
+The presence of temporal signal in a data set can be assessed using TempEst and more formally tested using Bayesian Evaluation of Temporal Signal (BETS). %GB: cite both TempEst and BETS, and perhaps the SARS-CoV-2 BETS paper.
+For more information on the different molecular clock models available in BEAST: \code{http://beast.community/clocks}} %GB: replace - throughout the manuscript - \code by \url so that the URLs can be clicked/opened.
 
 6. Specify a demographic model\\
 
-Click on the ``Trees" tab to specify the Tree prior. Following Lemey et al., 2020 specify an exponential growth coalescent model parameterized with a Growth Rate parameter. \\
+Click on the ``Trees" tab to specify the Tree prior. Following Lemey et al., 2020, %GB: replace this with an actual citation command
+we specify an exponential growth coalescent model parameterized with a growth rate parameter.
+We refer to \url{http://beast.community/tree_priors} for a more detailed explanation on a subset of the available coalescent models in BEAST. \\
 
 \ann{By default, BEAST will initialize the analysis with a randomly generated starting tree. It is also possible to start the analysis from a user-specified time-scaled phylogeny. This is usually done to reduce the burn-in time required for the tree topologies to converge. Specify a starting tree by clicking on ``Import Data" under the ``File" menu, to load a Nexus tree into BEAUti.}
 
@@ -174,21 +198,28 @@ Click on the ``States" tab and select the location partition. Check the ``Recons
 
 8. Specify the priors \\
 
-Click on the ``Priors" tab. Following Lemey et al., we use default priors and only specify a Lognormal prior with \code{mu=0} and \code{sigma=10} for the effective population size, and a Laplace prior with \code{mean=0} and \code{scale=100} for the exponential growth rate parameter.\\
+Click on the ``Priors" tab. Following Lemey et al., 2020, %GB: replace this with an actual citation command
+we use default priors and only specify a Lognormal prior with \code{mu=0} and \code{sigma=10} for the effective population size, and a Laplace prior with \code{mean=0} and \code{scale=100} for the exponential growth rate parameter.\\
 
 \ann{BEAST aims to offer sensible default priors when informative prior information is unavailable. A wide range of prior distributions is also available to customize each analysis as needed.}
 
-9. Set up the operators \\
+9. Set up the transition kernels \\
 
-Click on the ``Operators" tab. Identify the tip-date sampling operators on the table. These have the description ``Uniform sample from precision of age of this tip". The parameters associated with these operators tend to converge rapidly and have good mixing. Decrease the weight of these operators to 0.25 to sample less frequently from this parameters so that the MCMC can get more samples from other parameters of interest.\\
+Click on the ``Operators" tab. Identify the tip-date sampling transition kernels in the table.
+These have the description ``Uniform sample from precision of age of this tip".
+The parameters associated with these transition kernels tend to converge rapidly and have good mixing.
+Decrease the weight of these operators to 0.25, but leave the weights of the other transition kernels at their default values, to sample these parameters less frequently so that the analysis gets to spend more time on estimating other parameters of interest.\\
 
-\ann{Operators are used to propose new values for each parameter sampled from the posterior distribution. Different combinations of operators can be used to fix certain parameters and customize the analysis as needed (e.g. estimating spatial spread on a fixed tree).}
+\ann{Transition kernels (called ``operators'' in BEAST) are used to propose new values for each parameter being estimated during the analysis.
+Different combinations of transition kernels can be used to fix certain parameters and customize the analysis as needed (e.g. estimating spatial spread on a fixed user-provided tree).}
 
-9. Set up the MCMC options and generate the BEAST XML file\\
+10. Set up the MCMC options and generate the BEAST XML file\\
 
-Click on the ``MCMC" tab. Set ``Length of chain" to 100,000,000 states and ``Log parameters every" to 50,000 states. This will thin the MCMC results so that only 2,000 samples are collected by the end of the run. Set your file name stem as the desired output file name (e.g. \texttt{282\_GISAID\_sarscov2}), and click on ``Generate BEAST File" to create a BEAST XML file.\\
+Click on the ``MCMC" tab. Set ``Length of chain" to 100,000,000 states and ``Log parameters every" to 50,000 states.
+This will thin the MCMC results so that only 2,000 samples are collected by the end of the run.
+Set your file name stem to generate the desired output file names (e.g. \texttt{282\_GISAID\_sarscov2}), and click on ``Generate BEAST File" to create the BEAST XML file for this analysis.\\
 
-\ann{Thinning consists on discarding all but the nth sample from an MCMC run. This subsampling technique is done to decrease the autocorrelation in the samples collected and reduce the file size of the output. This is important since Bayesian phylogenetic analyses often require very long chains, and storing every single state would be prohibitive for file storage.}
+\ann{Thinning consists of storing only every $n$th sample from an MCMC analysis. This subsampling technique is done to decrease the autocorrelation in the samples collected and reduce the file size of the output. This is important since Bayesian phylogenetic analyses often require very long chains, and storing every single state would be prohibitive for file storage.}
 
 \section*{PROTOCOL 3: PHYLOGEOGRAPHIC RECONSTRUCTION INCORPORATING TRAVEL HISTORY INFORMATION}
 
