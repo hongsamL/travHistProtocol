@@ -17,6 +17,9 @@
 \usepackage{multicol}
 \usepackage{changepage}
 \usepackage{breakcites}
+\usepackage{subcaption}
+
+\captionsetup{justification=justified,singlelinecheck=false}
 
 \newcommand{\ann}[1]{
 \begin{adjustwidth}{0.5cm}{}
@@ -32,7 +35,7 @@
 
 \begin{abstract}
 \begin{adjustwidth}{0.5cm}{0.5cm}
-TBD 
+Advances in sequencing technologies during the last decade have introduced quicker and cheaper sequencing, to the point where sequencing pathogen populations is now part of routine public health practices. Within this context, phylogenetics (and more specifically phylogeography) has become a popular method to study disease transmission using sequencing data. Here, Bayesian approaches have the benefit of being able to incorporate epidemiological and ecological data to achieve detailed reconstructions of the spatial spread of an epidemic while accounting for phylogenetic uncertainty. In this unit we describe how to reconstruct the spatial spread of a pathogen through Bayesian phylogenetic analysis in BEAST. The protocols focus on how to incorporate molecular, epidemiological and accommodate individual travel history data to perform Bayesian phylogeography in discrete space. 
 \end{adjustwidth}
 \end{abstract}
 
@@ -42,20 +45,20 @@ TBD
 
 Bayesian Evolutionary Analysis Sampling Trees (BEAST) \cite{beast110} is a software package that provides a general framework for phylogenetic inference and evolutionary hypothesis testing using molecular sequence data \cite{beastOG,beast17,beast110}.
 As such, BEAST employs a combination of different types of models (including but not limitied to molecular clock models, coalescent models and substitution models) to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences.
-Phylogenetic, phylogeographic and phylodynamic inference is performed using Bayesian inference through Markov chain Monte Carlo (MCMC) and in doing so makes use of BEAGLE, a high-performance computational library for statistical phylogenetics. %GB: insert BEAGLE citation
+Phylogenetic, phylogeographic and phylodynamic inference is performed using Bayesian inference through Markov chain Monte Carlo (MCMC) and in doing so makes use of BEAGLE, a high-performance computational library for statistical phylogenetics \cite{beagle3}. %GB: insert BEAGLE citation %SH: don
 BEAST is widely used in the field of phylodynamics and molecular epidemiology of infectious disease to obtain insights from molecular data through an expanding array of statistical models and estimation procedures. \\
 %Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
 
 A specific type of analysis that can be performed within this context is pathogen phylogeographic inference.
-This type of analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of annotated time-scaled phylogenies.
-%GB: I would put another sentence here mentioning the GLM paper, the importance of such a GLM, and then use the application to H3N2 in that paper to transition to the next line of text.
-Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}. \\
+This type of analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of annotated time-scaled phylogenies. We can further extend this framework to integrate epidemiological information as a way to identify potential predictors of spatial spread under a generalized linear model (GLM). Such an approach can allows us to, for example, assess the impact of air travel on the global spread of influenza \cite{glm}. 
+%GB: I would put another sentence here mentioning the GLM paper, the importance of such a GLM, and then use the application to H3N2 in that paper to transition to the next line of text. %SH: done
+Because of the flexibility of this framework, Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}. \\
 
 We can use BEAST to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA).
 This method estimates the probability of pathogen transmission between two locations using models analogous to those used for characterising nucleotide substitution probabilities \cite{dta}.
 Recently, a new approach has been developed to integrate individual travel history data into DTA reconstructions in order to obtain more realistic reconstructions of pathogen spread and mitigate sampling bias \cite{travhist}. \\
 
-We here provide four related protocols to reproduce the travel history-aware phylogeographic reconstructions performed in Lemey et. al, 2020. %GB replace 'Lemey et al.' by an actual citation?
+We here provide four related protocols to reproduce the travel history-aware phylogeographic reconstructions performed in \cite{travhist}. %GB replace 'Lemey et al.' by an actual citation? %SH: done
 Protocol 1 introduces the GISAID database and provides the required steps to construct a SARS-CoV-2 multiple sequence alignment from the sequences available in GISAID.
 In Protocol 2, we provide instructions on how to set up a generalized linear model analysis for discrete state phylogegraphic inference using BEAUti.
 Protocol 3 introduces an automated script to modify a BEAUti-generated XML file to incorporate travel history data, which can subsequently be run using BEAST.
@@ -69,11 +72,11 @@ For SARS-CoV-2 analyses, the largest repository of genomes is available through 
 The GISAID initiative provides a platform to openly share genomic data of influenza viruses as well as SARS-CoV-2 \cite{gisaid}.
 Access to the database is free (\url{https://www.gisaid.org/registration/register/}), but requires the user to register and agree to GISAID's terms of use in order to obtain access.\\
 
-This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloaded from GISAID. In this example, we will construct an alignment for the 282-taxa dataset used in Lemey et. al, 2020. %GB: replace 'Lemey et al.' by an actual citation?
+This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloaded from GISAID. In this example, we will construct an alignment for the 282-taxa dataset used in \cite{travhist}. %GB: replace 'Lemey et al.' by an actual citation? %SH: done
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
-\hspace{0.5cm}Standard workstation running Linux, MacOS or Windows. 
+\hspace{0.5cm}Standard workstation running Linux, MacOS or Windows 10. 
 
 \subsubsection*{Software}
 \hspace{0.5cm}A modern web browser (Google Chrome and Mozilla Firefox recommended).
@@ -82,20 +85,32 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 
 \hspace{0.5cm}The latest Aliview \cite{aliview} version (v1.26 used in this protocol).
 
+\hspace{0.5cm}A terminal emulator running a standard Unix shell. \\
+\ann{For Windows, a BASH shell can be installed through the Windows Subsystem for Linux. For more information on this, see \code{https://docs.microsoft.com/en-us/windows/wsl/}}
+
 \subsubsection*{Files}
-\hspace{0.5cm}A list of GISAID accession numbers. 
+\hspace{0.5cm}A list of GISAID accession identifiers. 
 
 \hspace{0.5cm}A FASTA file with the SARS-CoV-2 reference genome UTR sequences\\
-
-\ann{Example files can be found at \code{githublink}} %GB: why is this here?
+\ann{Example files can be found at \\
+\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol1}} %GB: why is this here? %SH: added a real link
 
 1. Search and download the desired sequences in the GISAID database \\
 
-Log in into GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to access a table with all available SARS-CoV-2 sequences in the database. To bulk download sequences by accession ID, click on the Fulltext{\Large $\blacktriangleup$} button, paste your comma-separated list of accessions in the search box, and download the FASTA sequences using the download button. In this example, we will save the sequences as\code{gisaid\_selection.fasta}.\\ %GB: can we provide the list of accession numbers to replicate our analysis (and mention this here)?
+Log in into GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to access a table with all available SARS-CoV-2 sequences in the database. To bulk download sequences by accession ID, click on the Fulltext{\Large $\blacktriangleup$} button, paste your comma-separated list of accessions (see Files for an example) in the search box, and download the FASTA sequences using the download button (Figure \ref{fig:GISAID}). In this example, we will save the sequences as\code{gisaid\_selection.fasta}.\\ %: GB can we provide the list of accession numbers to replicate our analysis (and mention this here)? %SH: The protocol has a dedicated section where all files are listed.
 
 \ann{We can also use the \code{EpiCoV} Browse portal to download a custom selection of genomes. On the header section of the table you will see multiple search fields and drop-down menus to filter sequences according to you desired criteria.}
 
-2. Remove white-spaces from the FASTA file %GB: need to mention any differences for bash or shell scripting?
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/gisaid_screenshot.png}
+    \caption{EpiCoV GISAID portal. Here, we search for all 282 sequences used in \cite{travhist}, and download them by selecting the checkbox on the left of the table and pressing the download button. We can also download metadata for the sequences and the corresponding GISAID acknowledgement table using the same approach.}
+    \label{fig:GISAID}
+\end{figure}
+
+
+2. Remove white-spaces from the FASTA file %GB: need to mention any differences for bash or shell scripting? %SH: I don't think its needed. This should work with fine with any UNIX shell.
 \begin{verbatim}
 sed -i.bkp "s/ /_/g" gisaid_selection.fasta 
 \end{verbatim}
@@ -108,24 +123,33 @@ cat utr.fasta >> gisaid_selection.fasta
 mafft --thread -1 --nomemsave gisaid_selection.fasta > gisaid_aln.fasta
 \end{verbatim}
 
-\ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' untranslated regions (UTR) of the SARS-CoV-2 genome.
+\ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' untranslated regions (UTR) of the SARS-CoV-2 genome (see example files).
 We do this so that we can later trim these regions from the final alignment.
-We concatenate these sequences to the FASTA file containing our genomes of interest, and align all sequences using MAFFT.} %GB: how about mentioning here how many positions are in this alignment (i.e. after running MAFFT)? could be useful for people going through the steps; alternatively, how about providing this alignment in supplementary material?
+We concatenate these sequences to the FASTA file containing our genomes of interest, and align all sequences using MAFFT.} %GB: how about mentioning here how many positions are in this alignment (i.e. after running MAFFT)? could be useful for people going through the steps; alternatively, how about providing this alignment in supplementary material? %SH: We can't provide the alignment because we are not allowed to share GISAID data outside of GISAID per their rules . 
 
 4. Manually trim UTRs in the MSA using Aliview\\
 
-In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu. %GB: I think a screenshot (start of the alignment will suffice) could be useful here; if it's visually more appealing (i.e. depending on how it plays out with figure placement within the text), please also include a screenshot of the situation at the end of the alignment
-Remove the now-empty reference sequences and save the trimmed MSA.\\ %GB: it may also prove useful to explicitly mention here how many sites were trimmed at both ends of the alignment
+In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu. %GB: I think a screenshot (start of the alignment will suffice) could be useful here; if it's visually more appealing (i.e. depending on how it plays out with figure placement within the text), please also include a screenshot of the situation at the end of the alignment %SH done
+Remove the now-empty reference sequences and save the trimmed MSA (Figure \ref{fig:aliview}).\\ %GB: it may also prove useful to explicitly mention here how many sites were trimmed at both ends of the alignment %SH: Added in the figure caption
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/aliview.pdf}
+    \caption{Alignment visualizations in Aliview before (top) and after (bottom) trimming the 5' and 3' UTR regions. Here we remove a total of 286 sites on the 5' side and 301 sites on the 3' side, bringing the alignment length to 29,412 sites.}
+    \label{fig:aliview}
+\end{figure}
+
 
 \section*{PROTOCOL 2: SETTING UP A DISCRETE TRAIT PHYLOGEOGRAPHIC RECONSTRUCTION IN BEAUTI}
 
-Performing Bayesian phylogeographic inference while accommodating individual travel history data constitutes an extension of traditional Bayesian DTA available in BEAST. %GB: cite Lemey et al. 2009; I here use the term 'Bayesian DTA' instead of 'DTA', as the latter is not specific to BEAST in my opinion, i.e. you can do DTA using maximum likelihood
+Performing Bayesian phylogeographic inference while accommodating individual travel history data constitutes an extension of traditional Bayesian DTA \cite{dta} available in BEAST. %GB: cite Lemey et al. 2009; I here use the term 'Bayesian DTA' instead of 'DTA', as the latter is not specific to BEAST in my opinion, i.e. you can do DTA using maximum likelihood %SH: added reference
 BEAUti is an interactive graphical application enabling to design the analysis you want to perform in BEAST and generates an XML file that will serve as the input file for BEAST.
 This XML file contains all the required data, the models (and priors) that were selected in BEAUti, and the computational settings which will be used to run the MCMC algorithm that will collect samples of all relevant parameters (including the phylogenetic tree with annotated ancestral locations) from the posterior. \\ 
 
-This protocol describes how to set up a DTA analysis with a generalized linear model (GLM) extension to simultaneously reconstruct spatiotemporal history and test the contribution of potential predictors of spatial spread using BEAST. %GB: cite Lemey et al. 2014
+This protocol describes how to set up a DTA analysis with a generalized linear model (GLM) extension to simultaneously reconstruct spatiotemporal history and test the contribution of potential predictors of spatial spread using BEAST \cite{glm}. %GB: cite Lemey et al. 2014 %SH: done
 Such an approach enables parameterizing each rate of among-location movement in the phylogeographic model as a log linear function of various potential predictors.
 In this example, we will use the MSA generated in Protocol 1 to set up a DTA+GLM phylogeographic reconstruction using a flight matrix and a distance matrix as covariates (but see \cite{travhist} for more detailed information). %GB: can you add a bit more information on these 2 matrices? 'flight matrix' is very general, and which distances are being used in the distance matrix?
+
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
@@ -141,7 +165,8 @@ In this example, we will use the MSA generated in Protocol 1 to set up a DTA+GLM
 
 \hspace{0.5cm}Covariate matrices in CSV format\\
 
-\ann{Example metadata and covariate files available at\code{github}} %GB: provide an actual GitHub link + explain explicitly where these data came from (if some of them can easily be downloaded from a website, please mention this)
+\ann{Example metadata and covariate files available at\\
+\code{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol2}} %GB: provide an actual GitHub link + explain explicitly where these data came from (if some of them can easily be downloaded from a website, please mention this) %SH: added link
 
 1. Import the MSA into BEAUti\\
 
@@ -150,43 +175,59 @@ Load the MSA into BEAUti by selecting Import Data from the File menu. You can al
 2. Specify the tip sampling dates\\
 
 Select the Tips tab and check the ``Use tip dates" box. By default all taxa will show as having a date of zero (i.e. all sequences were sampled at the same time in the present).
-To specify each sampling date, select ``Import Dates" and load the metadata file with the ``Parse calendar dates with variable precision" option. %GB: this is unclear to me; aren't the sampling times part of the sequence names/labels? If they're not, we should explain this in the text and write up what the data that you download from GISAID actually look like (let's do that). Why is there a need to load a metadata file?
+To specify each sampling date, select ``Import Dates" and load the metadata file. This metadata file contains a tab separated table mapping the FASTA header of each sequence in the alignment with the corresponding sampling date. When loading the file, select the ``Parse calendar dates with variable precision" option. %GB: this is unclear to me; aren't the sampling times part of the sequence names/labels? If they're not, we should explain this in the text and write up what the data that you download from GISAID actually look like (let's do that). Why is there a need to load a metadata file? %SH: The labels have sampling times but I'm providing a metadata file to make things more streamlined since we are already using a metadata file for the location trait. The 
 This allows for taxon dates to have different degrees of resolution (e.g. year-month-day vs. year-month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision| in the ``Tip date sampling" menu at the bottom of the table. \\
 
-\ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Parse Dates", and specify the rules for delimiting the date from all taxon labels.} %GB: maybe a good idea to cite my protocol paper for screenshots: https://academic.oup.com/mbe/article/36/11/2620/5541799 (Figure 2a)
+\ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Parse Dates", and specify the rules for delimiting the date from all taxon labels. For an example of what this looks like, see \cite{skyprot} Figure 2a. } %GB: maybe a good idea to cite my protocol paper for screenshots: https://academic.oup.com/mbe/article/36/11/2620/5541799 (Figure 2a) %SH: added
 
 3. Specify the sampling location of each taxa as a discrete trait\\
 
 Click on the Traits tab.
-To associate each taxon with a sampling location, click on ``Import traits" and select the metadata file. %GB: we need to properly describe this metadata file. Is it the same one as for specifying the sampling times? Should we provide a screenshot of what it looks like?
+To associate each taxon with a sampling location, click on ``Import traits" and select the metadata file (Figure \ref{fig:location}). %GB: we need to properly describe this metadata file. Is it the same one as for specifying the sampling times? Should we provide a screenshot of what it looks like?
 This will create a new trait for each column on the metadata file. Delete all non-relevant traits by clicking on the ``-" button at the bottom-left of the page (keep only the ``location'' trait for this example). Select the desired trait and click on ``create partition from trait". A new partition containing the trait data will be created under the Partitions tab.\\ %GB: perhaps we can here provide a composite figure (for this entire step of the protocol)? For example, what the metadata location data look like in the file, how to delete all the non-relevant traits, and what you should see after the partition has been created.
 
 \ann{It is also possible to add a discrete trait without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Add Trait" to create a new trait with a corresponding data partition. Select all taxa and click on ``Guess trait" values to parse the trait values from the taxon labels.}
 
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=1\textwidth]{figs/location_trait.pdf}
+    \caption{Adding the sampling locations as a trait. From back to front: $i)$ tab-separated metadata file containing sequence names and sampling locations $ii)$ columns in the metadata file other than ``name" loaded as traits. $iii)$ traits different from ``location" removed from the analysis $iv)$ partition corresponding to the ``location" trait created.}
+    \label{fig:location}
+\end{figure}
+
+\clearpage
+
 4. Set up the nucleotide and trait substitution models\\
 
-Click on the ``Sites" tab. Following Lemey et al. (2020), %GB: replace this with an actual citation command
+Click on the ``Sites" tab. Following \cite{travhist}, %GB: replace this with an actual citation command %SH: done
 we will specify an HKY+$\Gamma$ nucleotide substitution model, and a GLM for the location trait.
-Load the covariates by clicking on ``Setup GLM'' and ``Import Predictors''. %GB: this needs more information; what does the file with covariate data look like? Which format should be specified? How many lines, and what kind of information on each line?
+Load the covariates by clicking on ``Setup GLM'' and ``Import Predictors'' (Figure \ref{fig:GLM}). In this example, we inform the rates of spread between locations using two predictors: a flight matrix containing air travel data between locations, and a distance matrix containing intra-continental distances. %GB: this needs more information; what does the file with covariate data look like? Which format should be specified? How many lines, and what kind of information on each line? %SH added in the protocol annotations
 Check the ``Log'' and ``Std'' boxes to log-transform and standardize the GLM predictors.\\
 
-\ann{In this context, the terms `predictor' and `covariate' are used interchangeably.
-By default, each predictor name will be the same as the name of the file it originates from. %GB: give an explicit example for this particular example; this paragraph is quite general/generic at the moment
-You can specify new names by double clicking on each name.
-Non-pairwise covariates can also be setup as origin and destination predictors in this window.}
+\ann{In this context, the terms `predictor' and `covariate' are used interchangeably.  
+By default, each predictor name will be the same as the name of the file it originates from. Non-pairwise covariates can also be setup as origin and destination predictors in this window. Predictor files are comma-separated files (CSV) formatted in two different ways depending on the nature of the predictor. For pairwise predictors, the CSV file is in the form of a square matrix with the different locations as column and row names alphabetically ordered. For origin-destination predictors, the CSV file is in the form of a two column table with location names alphabetically ordered and predictor values. %GB: give an explicit example for this particular example; this paragraph is quite general/generic at the moment. % SH:added details.
+You can also specify new predictor names by double clicking on each name.
+}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figs/GLM.pdf}
+    \caption{Setting up the predictors for the GLM-based spatial diffusion model. In this example, we load the air travel and intra-continental distance predictors, and log-transform and standardize them by checking the corresponding boxes.}
+    \label{fig:GLM}
+\end{figure}
 
 5. Specify a clock model\\
 
-Following the model specifications in Lemey et al. (2020), %GB: replace this with an actual citation command
+Following the model specifications in \cite{travhist}, %GB: replace this with an actual citation command
 click on the ``Clocks" tab to specify a strict clock model for both the nucleotide and trait partitions.\\
 \ann{BEAST analyses operate under the assumption of a molecular clock to estimate time-stamped phylogenies from the molecular sequence data and associated sampling times.
 For this to hold valid, there needs to be sufficient temporal signal in the data (see the section \textbf{Critical parameters and troubleshooting}).
-The presence of temporal signal in a data set can be assessed using TempEst and more formally tested using Bayesian Evaluation of Temporal Signal (BETS). %GB: cite both TempEst and BETS, and perhaps the SARS-CoV-2 BETS paper.
-For more information on the different molecular clock models available in BEAST: \code{http://beast.community/clocks}} %GB: replace - throughout the manuscript - \code by \url so that the URLs can be clicked/opened.
+The presence of temporal signal in a data set can be assessed using TempEst \cite{tempest} and more formally tested using Bayesian Evaluation of Temporal Signal (BETS) \cite{bets}. %GB: cite both TempEst and BETS, and perhaps the SARS-CoV-2 BETS paper. %SH:done
+For more information on the different molecular clock models available in BEAST: {\upshape\url{https://beast.community/clocks}}} %GB: replace - throughout the manuscript - \code by \url so that the URLs can be clicked/opened.
 
 6. Specify a demographic model\\
 
-Click on the ``Trees" tab to specify the Tree prior. Following Lemey et al., 2020, %GB: replace this with an actual citation command
+Click on the ``Trees" tab to specify the Tree prior. Following \cite{travhist}, %GB: replace this with an actual citation command
 we specify an exponential growth coalescent model parameterized with a growth rate parameter.
 We refer to \url{http://beast.community/tree_priors} for a more detailed explanation on a subset of the available coalescent models in BEAST. \\
 
@@ -198,7 +239,7 @@ Click on the ``States" tab and select the location partition. Check the ``Recons
 
 8. Specify the priors \\
 
-Click on the ``Priors" tab. Following Lemey et al., 2020, %GB: replace this with an actual citation command
+Click on the ``Priors" tab. Following \cite{travhist}, %GB: replace this with an actual citation command %SH done
 we use default priors and only specify a Lognormal prior with \code{mu=0} and \code{sigma=10} for the effective population size, and a Laplace prior with \code{mean=0} and \code{scale=100} for the exponential growth rate parameter.\\
 
 \ann{BEAST aims to offer sensible default priors when informative prior information is unavailable. A wide range of prior distributions is also available to customize each analysis as needed.}
@@ -215,7 +256,7 @@ Different combinations of transition kernels can be used to fix certain paramete
 
 10. Set up the MCMC options and generate the BEAST XML file\\
 
-Click on the ``MCMC" tab. Set ``Length of chain" to 100,000,000 states and ``Log parameters every" to 50,000 states.
+Click on the ``MCMC" tab. Set ``Length of chain" to 200,000,000 states and ``Log parameters every" to 100,000 states.
 This will thin the MCMC results so that only 2,000 samples are collected by the end of the run.
 Set your file name stem to generate the desired output file names (e.g. \texttt{282\_GISAID\_sarscov2}), and click on ``Generate BEAST File" to create the BEAST XML file for this analysis.\\
 
@@ -227,7 +268,7 @@ Phylogeographic reconstruction using DTA has been show to be sensitive to spatio
 
 This protocol explains how augment a DTA analysis generated in BEAUti by incorporating individual travel history data.
 In this example, we will use the XML file generated in Protocol 2 and modify it to include the available travel history data (See \cite{travhist} for more detailed information).
-Importantly, BEAST requires its accompanying high-performance computational library for statistical phylogenetics -- known as BEAGLE -- %GB: add BEAGLE citation
+Importantly, BEAST requires its accompanying high-performance computational library for statistical phylogenetics -- known as BEAGLE \cite{beagle3} -- %GB: add BEAGLE citation %SH:done
 to be installed in order to optimise computational performance on a variety of hardware resources.
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
@@ -263,9 +304,16 @@ python add_travel_history.py --xml 282_GISAID_sarscov2.xml
         --out 282_GISAID_sarscov2_travelHist.xml
 \end{verbatim}
 
-\ann{Although this example uses a DTA+GLM analysis, the\code{add\_travel\_history.py} script also works for symmetric and asymmetric DTA analyses. For such cases, run the same command without the\code{--covariate} flags. This script also requires for the travel history metadata to follow a specific format.
-The metadata file must contain the following columns: ``name"  (taxon name), ``travelHistory"  (travel location), ``travelDays"  (date of travel as days before to sampling date), ``priorMean"  and ``priorSTDEV"  %GB: does STDEV need to be all capital letters? We also need to be more clear here, and perhaps provide a screenshot of the metadata file in this step.
+\ann{Although this example uses a DTA+GLM analysis, the\code{add\_travel\_history.py} script also works for symmetric and asymmetric DTA analyses. For such cases, run the same command without the\code{--covariate} flags. This script also requires for the travel history metadata to follow a specific format (Figure \ref{fig:travmeta}).
+The metadata file is in CSV format and must contain the following columns: ``name"  (taxon name), ``travelHistory"  (travel location), ``travelDays"  (date of travel as days before to sampling date), ``priorMean"  and ``priorStdev"  %GB: does STDEV need to be all capital letters? We also need to be more clear here, and perhaps provide a screenshot of the metadata file in this step.
 (prior specifications for the mean and standard deviation of a normal prior on travel dates when exact data is unavailable).}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/travelhist.png}
+    \caption{Travel history metadata. Metadata file must contain the columns ``name", ``travelHistory", ``travelDays", ``priorMean" and ``priorStdev". Other columns can be included but will not be parsed to update the XML. For sequences where either exact travel dates are not available, we set the ``travelDays" column to \code{NA}, such that the MCMC samples from a range of possible travel dates with a Gaussian prior distribution of mean ``priorMean" (in units of days) and standard deviation ``priorStdev". For sequences were exact travel dates are available, we set the prior columns to \code{NA}.}
+    \label{fig:travmeta}
+\end{figure}
 
 2. Run the updated XML file using BEAST
 \begin{verbatim}
@@ -276,15 +324,15 @@ java -cp beast.jar dr.app.beast.BeastMain -seed 2020
          282_GISAID_sarscov2_travelHist.xml
 \end{verbatim}
 
-\ann{Here, we execute BEAST on the command-line using the latest BEAST jar file. We specify a starting seed with the -seed flag, %GB: why? is this necessary?
+\ann{Here, we execute BEAST on the command-line using the latest BEAST jar file. We specify a starting seed with the -seed flag , %GB: why? is this necessary? %SH: reproducibility? I am okay with removing it.
 and use the \code{-beagle\_cuda} flag to accelerate the likelihood computations using a GPU (only applicable if you have a powerful GPU with sufficient double precision -- or FP64 -- compute performance available).
 This option is recommended when available, as using a GPU reduces runtime by accelerating likelihood computations when performing phylogeographical analyses on large datasets.
-We also take advantage of the BEAST checkpointing functionality %GB: I would appreciate a citation to the online inference paper here
+We also take advantage of the BEAST checkpointing functionality \cite{onlineBEAST} %GB: I would appreciate a citation to the online inference paper here %SH: added
 to save a snapshot of the MCMC run into the travelHist.checkpoint file every 1,000,000 states.
 This allows us to resume the analysis from the checkpoint in case the run becomes interrupted, or more iterations of the chain are required.}
 
-%GB: the visualisation section needs a figure; can we do the visualisation for a different sequence/patient than in the Nature Comms. paper?
-\section*{PROTOCOL 4: VISUALIZING TAXON-SPECIFIC SPATIAL TRAJECTORIES} %GB: change to INDIVIDUAL-SPECIFIC?
+%GB: the visualisation section needs a figure; can we do the visualisation for a different sequence/patient than in the Nature Comms. paper? %SH: I agree, will ask for Philippe 
+\section*{PROTOCOL 4: VISUALIZING INDIVIDUAL-SPECIFIC SPATIAL TRAJECTORIES} %GB: change to INDIVIDUAL-SPECIFIC? %SH: done
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
 Standard workstation running Linux, MacOS, or Windows. 
@@ -302,7 +350,7 @@ Trees output from a BEAST travel history DTA+GLM analysis \\
 1. Extract all Markov jump histories for an isolate of interest
 \begin{verbatim}
 java -cp beast.jar dr.app.tools.TaxaMarkovJumpHistoryAnalyzer 
-        -taxaToProcess "hCoV-19/Australia/NSW05/2020|EPI_ISL_412975|2020-02-28" 
+        -taxaToProcess "hCoV-19/Brazil/SP-02/2020|EPI_ISL_413016|2020-02-28" 
         -stateAnnotation location
         -burnin 100
         -msrd 2020.1748633879781
@@ -310,34 +358,63 @@ java -cp beast.jar dr.app.tools.TaxaMarkovJumpHistoryAnalyzer
 \end{verbatim}
 
 \ann{The BEAST jar file packages a number of standalone applications that can be accessed by using the -cp flag when calling Java from the command line.
-Here, we use the TaxaMarkovJumpHistoryAnalyzer application to extract all Markov jump histories for isolate EPI\_ISL\_412975, into a CSV file.
+Here, we use the TaxaMarkovJumpHistoryAnalyzer application to extract all Markov jump histories for isolate EPI\_ISL\_413016, into a CSV file.
 This application takes a trees file with complete state change history as an input (which is being generated by running the XML constructed in the protocol), and outputs all spatial trajectories for a selection of taxon/taxa.
 We specify the desired taxon labels through the\code{-taxaToProcess} flag, and specify the annotation name of the discrete trait that was reconstructed using \code{-stateAnnotation}.
 We can also remove a number of trees corresponding to the burn-in using the \code{-burnin} flag, and scale the output results to reflect chronological time instead of node heights using the \code{-msrd} flag by specifying the most recent sampling date.
-An example output file can be found in \code{LINK}}
+An example output file can be found in {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol1}}}
 
 2. Load spatial trajectories into R
 \begin{verbatim}
 library(MarkovJumpR)
-spatial_paths <- loadPaths(fileName = "EPI_ISL_412975_MJhist.csv")
+spatial_paths <- loadPaths(fileName = "EPI_ISL_413016_MJhist.csv")
 \end{verbatim}
 
 3. Inspect spatial trajectories reconstructed
 \begin{verbatim}
-----
-EXPLORE THE CSV OUTPUT IN R TO EXTRACT ALL LOCATIONS AND CUTOFF DATE
-----
+spatial_paths$minTime
 \end{verbatim}
+yields the earliest time along a spatial path across all trees
+\begin{verbatim}
+2019.892
+\end{verbatim}
+
+
+To look at the frequency of locations visited across all spatial paths we type
+\begin{verbatim}
+loc_freq <- table(spatial_paths$paths$location)
+loc_freq[order(loc_freq,decreasing = T)]
+\end{verbatim}
+which yields a frequency table of locations in descending order
+\begin{verbatim}
+         Italy         Brazil     ChinaHubei    Switzerland        Finland 
+           444            437            436             85             23 
+  ChinaBeijing             UK      Australia        Germany            USA 
+             9              8              7              6              6 
+        France      Singapore          Spain  ChinaHongKong          Japan 
+             5              5              5              4              3 
+   Netherlands         Sweden        Vietnam ChinaGuangdong  ChinaShandong 
+             3              3              3              2              2 
+    NewZealand       Thailand        Belgium       Cambodia         Canada 
+             2              2              1              1              1 
+ChinaChongqing    ChinaFujian    ChinaYunnan          India           Iran 
+             1              1              1              1              1 
+        Mexico          Nepal       Portugal     SouthKorea         Taiwan 
+             1              1              1              1              1     
+\end{verbatim}
+
+In this example, we see that Italy, Brazil, ChinaHubei and Switzerland appear most commonly across the spatial paths. \\
 
 4. Set up plot colors \\
 
-We here specify five colors of choice corresponding to the five locations that make up the spatial trajectory of isolate EPI\_ISL\_412975.
+We here specify four colors of choice corresponding to the four locations of interest that make up the spatial trajectory of isolate EPI\_ISL\_413016.
 
 \begin{verbatim}
-locations <- c("Wuhan","Italy","SEasia","Iran","Australia")
-locationColors <-c("#E3272F","#31B186","#931ECF","#C695BD","#9DC7DD")
+locations <- c("ChinaHubei","Italy","Brazil","Switzerland")
+locationColors <-c("#E3272F","#31B186","#931ECF","#C695BD")
 locationMap <- data.frame(location = locations,
-                position = c(1, 2, 3, 4, 5))
+                position = c(1, 2, 3, 4))
+locationMap$color <- sapply(locationColors,as.character)                
 \end{verbatim}
 
 5. Set up plot labels
@@ -349,12 +426,19 @@ dateLabels <- c("01-Dec-19", "15-Dec-19", "01-Jan-20", "15-Jan-20",
 6. Plot path spatial trajectories
 \begin{verbatim}
 plotPaths(travelHistPaths$paths, locationMap = locationMap,
-        yJitterSd = 0.1, alpha = 0.1, minTime = 2019.9,
+        yJitterSd = 0.1, alpha = 0.1, minTime = spatial_paths$minTime,
         addLocationLine = TRUE,
         xAt = decimal_date(dmy(dateLabels)),
         xLabels = dateLabels,
         mustDisplayAllLocations = TRUE)
 \end{verbatim}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figs/travel_trajectory.pdf}
+    \caption{Spatial trajectory plot of isolate EPI\_ISL\_413016. The plot depicts the posterior spatiotemporal ancestral transition history for a single isolate. Each line represents a singe Markov jump history in the posterior distribution. The time spent in each location is denoted in the horizontal dimension, and transitions between two locations are depicted with vertical lines. The relative density of lines reflects the posterior uncertainty in location state and transition time between states. Here we see that the most supported ancestral history for isolate EPI\_ISL\_413016 is that of an origin in ChinaHubei, with a jump into Italy late January, and an introduction into Brasil close to March 1st.}
+    \label{fig:trajectory}
+\end{figure}
 
 \section*{GUIDELINES FOR UNDERSTANDING RESULTS}
 
@@ -388,7 +472,7 @@ Tracer will automatically calculate the ESS for all parameters in a log file, an
 Individually inspecting every tree from the posterior obviously constitutes an impractical way to interpret the MCMC results. We are thus required to summarize the distribution of trees sampled as a point estimate with associated uncertainties. The TreeAnnotator application in BEAST enables creating a maximum clade credibility (MCC) tree to summarize the sampled trees for this purpose. For every tree in the distribution, a posterior clade probability for each node (i.e. the support for a node) is calculated by computing the frequency of the clustering that is defined by the node in question. The MCC tree is then defined as the tree that maximizes the product of the posterior clade probabilities across the tree. Instructions on how to use TreeAnnotator can be found at \url{beast.community/second_tutorial}. \\
 
 In some data sets, the posterior support for all nodes in a tree is such that many topologies do not end up represented in the MCC tree.
-When that is the case, a point estimate of a tree is unable to capture the diverse phylogeographic histories compatible with the data. Protocol 4 allows us to inspect individual spatial trajectories by summarizing across all possible phylogenetic ancestries in the posterior. Each spatial trajectory in the posterior is represented by a stepwise curve, where vertical lines represent transitions between two locations, and horizontal lines time intervals where the pathogen remains in the same location. The relative density of lines reflects the posterior uncertainty in spatiotemporal ancestry. %GB: definitely need a figure with a proper explanation of what can be seen/deduced from that figure!!
+When that is the case, a point estimate of a tree is unable to capture the diverse phylogeographic histories compatible with the data. Protocol 4 allows us to inspect individual spatial trajectories by summarizing across all possible phylogenetic ancestries in the posterior. Each spatial trajectory in the posterior is represented by a stepwise curve, where vertical lines represent transitions between two locations, and horizontal lines time intervals where the pathogen remains in the same location. The relative density of lines reflects the posterior uncertainty in spatiotemporal ancestry. %GB: definitely need a figure with a proper explanation of what can be seen/deduced from that figure!! %SH: figure added in protocol 4
 
 \begin{multicols}{2}
 
@@ -408,10 +492,10 @@ Much of the genomic data collected has a spatial resolution coarser than latitud
 
 Under the DTA formulation, movement between K discrete locations is parameterized in terms of a $K \times K$ infinitesimal rate matrix $\Lambda$, where $\Lambda_{ij}$ is the instantaneous movement rate from location $i$ to $j$. This model has been extended to allow for symmetrical and asymmetrical transition rates, and uses Bayesian Stochastic Search Variable Selection (BSSVS) to limit the number of rates to only those that adequately explain the phylogenetic diffusion process. An alternative formulation of this model parameterizes the rate matrix using a generalized linear model \cite{glm}. Here, the transition rates are defined as a linear combination of $P$ of potential explanatory predictors $(x_{ij1}, \dots, x_{ijP})$, with corresponding coefficients $(\beta_1, ..., \beta_P )$ and indicator variables $(\delta_1, ..., \delta_P )$ such that $Log(\Lambda_{ij}) = \sum_{p=1}^P \beta_p \delta_p x_{ijp}$. This model specification allows us to use BSSVS to explore the space of $2^P$ predictor combinations and obtain a posterior probability on the indicator variables to determine the support for inclusion of each predictor in the model.
 
-Incorporating individual travel history data can also be done to any of the DTA variants %GB: what are these variants?
+Incorporating individual travel history data can also be done to any of the other DTA variants (symmetric or asymmetric rates \cite{dta}) %GB: what are these variants? %SH: specified
 by augmenting the available dataset to include ancestral nodes associated with a known state but not with a known sequence \cite{travhist}.
-These ``ghost samples'' enable exploiting individual travel cases for which molecular sequence data was not obtained. %GB: is that the term/terminology we settled on?
-Ambiguous ancestral locations can also be allowed by integrating over the all possible locations with equal or user specified weights \cite{ambig}. %GB: I think this needs to be explained more clearly; additionally, it should be discussed what possible locations should be integrated out? How does one know or verify what these are?
+These ``ghost samples'' enable exploiting individual travel cases for which molecular sequence data was not obtained. %GB: is that the term/terminology we settled on? %SH: My understanding of ghost samples is that it refers more to unsampled tips while the previous sentence was referring to just the ancestor nodes (but not opposed to a more general use of the term).
+Ambiguous ancestral locations can also be allowed by integrating over the all possible locations with equal or user specified weights \cite{ambig}. An example would be the case where an individual traveled to multiple locations prior to being sampled. Given that the individual could have gotten infected in any of the visited countries, we can integrate this uncertainty by marginalizing over all potential locations for the unsampled ancestor when performing the phylogeographic inference. %GB: I think this needs to be explained more clearly; additionally, it should be discussed what possible locations should be integrated out? How does one know or verify what these are? %SH: added more info.
 
 \section*{CRITICAL PARAMETERS AND TROUBLESHOOTING}
 A critical assumption for any BEAST analysis is that the data set under consideration constitutes a samples from a measurably evolving population (MEP). MEPs \cite{mep1,mep2} refer to time-stamped sequence data where a sufficient amount of molecular evolution has occurred throughout the sampling period to establish a statistical relationship between genetic divergence and time. A data set conforming to this criteria is said to contain sufficient temporal signal. A lack of temporal signal will ultimately result in flawed analyses with unreliable divergence time estimates. Popular ways to assess temporal signal include doing a root-to-tip regression of genetic divergence and sampling times on a maximum likelihood tree \cite{tempest} and permutating tip date labels through date-randomization \cite{tipdate}. Recently, a formal way to assess temporal signal has been developed under a Bayesian framework using model comparison through Bayes factors \cite{bets}. In cases where the temporal signal is deemed insufficiently strong, one can resort to adding more data to increase temporal coverage or using prior knowledge to inform the molecular clock rate or the time to the most recent common ancestor.
@@ -420,7 +504,7 @@ Another commonly encountered issue is that of low ESS values for parameters rele
 
 \section*{SUGGESTIONS FOR FURTHER ANALYSIS}
 
-TBD
+This section is optional but I'm open for suggestions.
 
 \bibliographystyle{apalike}
 \bibliography{protocol}

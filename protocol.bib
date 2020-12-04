@@ -791,3 +791,122 @@
   keywords = "geography; influenza A virus; phylogeography",
   language = "en"
 }
+
+
+@ARTICLE{beagle3,
+  title    = "{BEAGLE} 3: Improved Performance, Scaling, and Usability for a
+              {High-Performance} Computing Library for Statistical
+              Phylogenetics",
+  author   = "Ayres, Daniel L and Cummings, Michael P and Baele, Guy and
+              Darling, Aaron E and Lewis, Paul O and Swofford, David L and
+              Huelsenbeck, John P and Lemey, Philippe and Rambaut, Andrew and
+              Suchard, Marc A",
+  abstract = "BEAGLE is a high-performance likelihood-calculation library for
+              phylogenetic inference. The BEAGLE library defines a simple, but
+              flexible, application programming interface (API), and includes a
+              collection of efficient implementations for calculation under a
+              variety of evolutionary models on different hardware devices. The
+              library has been integrated into recent versions of popular
+              phylogenetics software packages including BEAST and MrBayes, and
+              has been widely used across a diverse range of evolutionary
+              studies. Here we present BEAGLE 3, with new parallel
+              implementations, increased performance for challenging data sets,
+              improved scalability, and better usability. We have added new
+              openCL and CPU (central processing unit)-threaded implementations
+              to the library, allowing the effective utilization of a wider
+              range of modern hardware. Further, we have extended the API and
+              library to support concurrent computation of independent partial
+              likelihood arrays, for increased performance of nucleotide-model
+              analyses with greater flexibility of data partitioning. For
+              better scalability and usability, we have improved how
+              phylogenetic software packages use BEAGLE in multi-GPU (graphics
+              processing unit) and cluster environments, and introduced an
+              automated method to select the fastest device given the data set,
+              evolutionary model, and hardware. For application developers who
+              wish to integrate the library, we also have developed an online
+              tutorial. To evaluate the effect of the improvements, we ran a
+              variety of benchmarks on state-of-the-art hardware. For a
+              partitioned exemplar analysis, we observe run-time performance
+              improvements as high as 5.9-fold over our previous GPU
+              implementation. BEAGLE 3 is free, open-source software licensed
+              under the Lesser GPL and available at
+              https://beagle-dev.github.io.",
+  journal  = "Syst. Biol.",
+  month    =  apr,
+  year     =  2019,
+  keywords = "Bayesian phylogenetics; GPU; maximum likelihood; multicore
+              processing; parallel computing",
+  language = "en"
+}
+
+
+
+@ARTICLE{onlineBEAST,
+  title    = "Online Bayesian Phylodynamic Inference in {BEAST} with
+              Application to Epidemic Reconstruction",
+  author   = "Gill, Mandev S and Lemey, Philippe and Suchard, Marc A and
+              Rambaut, Andrew and Baele, Guy",
+  abstract = "Reconstructing pathogen dynamics from genetic data as they become
+              available during an outbreak or epidemic represents an important
+              statistical scenario in which observations arrive sequentially in
+              time and one is interested in performing inference in an
+              ``online'' fashion. Widely used Bayesian phylogenetic inference
+              packages are not set up for this purpose, generally requiring one
+              to recompute trees and evolutionary model parameters de novo when
+              new data arrive. To accommodate increasing data flow in a
+              Bayesian phylogenetic framework, we introduce a methodology to
+              efficiently update the posterior distribution with newly
+              available genetic data. Our procedure is implemented in the BEAST
+              1.10 software package, and relies on a distance-based measure to
+              insert new taxa into the current estimate of the phylogeny and
+              imputes plausible values for new model parameters to accommodate
+              growing dimensionality. This augmentation creates informed
+              starting values and re-uses optimally tuned transition kernels
+              for posterior exploration of growing data sets, reducing the time
+              necessary to converge to target posterior distributions. We apply
+              our framework to data from the recent West African Ebola virus
+              epidemic and demonstrate a considerable reduction in time
+              required to obtain posterior estimates at different time points
+              of the outbreak. Beyond epidemic monitoring, this framework
+              easily finds other applications within the phylogenetics
+              community, where changes in the data-in terms of alignment
+              changes, sequence addition or removal-present common scenarios
+              that can benefit from online inference.",
+  journal  = "Mol. Biol. Evol.",
+  volume   =  37,
+  number   =  6,
+  pages    = "1832--1842",
+  month    =  jun,
+  year     =  2020,
+  keywords = "BEAST; Bayesian phylogenetics; Markov chain Monte Carlo; online
+              inference; pathogen phylodynamics; real-time analysis",
+  language = "en"
+}
+
+
+@ARTICLE{skyprot,
+  title    = "Bayesian estimation of past population dynamics in {BEAST} 1.10
+              using the Skygrid coalescent model",
+  author   = "Hill, Verity and Baele, Guy",
+  abstract = "Inferring past population dynamics over time from heterochronous
+              molecular sequence data is often achieved using the Bayesian
+              Skygrid model, a non-parametric coalescent model that estimates
+              the effective population size over time. Available in BEAST, a
+              cross-platform program for Bayesian analysis of molecular
+              sequences using Markov chain Monte Carlo, this coalescent model
+              is often estimated in conjunction with a molecular clock model to
+              produce time-stamped phylogenetic trees. We here provide a
+              practical guide to using BEAST and its accompanying applications
+              for the purpose of drawing inference under these models. We focus
+              on best practices, potential pitfalls and recommendations that
+              can be generalized to other software packages for Bayesian
+              inference. This protocol shows how to use TempEst, BEAUti and
+              BEAST 1.10 (http://beast.community/), LogCombiner as well as
+              Tracer in a complete workflow.",
+  journal  = "Mol. Biol. Evol.",
+  month    =  jul,
+  year     =  2019,
+  keywords = "BEAST; Bayesian phylogenetics; Skygrid; TempEst; Tracer;
+              coalescent; pathogen phylodynamics",
+  language = "en"
+}

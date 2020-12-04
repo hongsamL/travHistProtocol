@@ -17,7 +17,7 @@ def load_hist(c):
     columns = defaultdict(list)
     with open(c) as f:
         reader = csv.DictReader(f)
-        assert set(['name','travelHistory','travelDays','priorMean','priorSTDEV']).issubset(set(reader.fieldnames)),\
+        assert set(['name','travelHistory','travelDays','priorMean','priorStdev']).issubset(set(reader.fieldnames)),\
                 "Cannot find column names in csv file, please check documentation for appropriate formatting"
         for row in reader:
             for (col,value) in row.items():
