@@ -45,24 +45,23 @@ The individual protocols focus on how to incorporate molecular, epidemiological 
 
 \section*{INTRODUCTION}
 
-%GB: Throughout this protocol, we need to keep in mind that not everyone is an expert on how to use BEAST, so let's write it for people who may have used BEAST already but don't know all the nuts and bolts and don't know how to read BEAST XML files.
-
 Bayesian Evolutionary Analysis Sampling Trees (BEAST) \cite{beast110} is a software package that provides a general framework for phylogenetic inference and evolutionary hypothesis testing using molecular sequence data \cite{beastOG,beast17,beast110}.
-As such, BEAST employs a combination of different types of models (including but not limitied to molecular clock models, coalescent models and substitution models) to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences.
-Phylogenetic, phylogeographic and phylodynamic inference is performed using Bayesian inference through Markov chain Monte Carlo (MCMC) and in doing so makes use of BEAGLE, a high-performance computational library for statistical phylogenetics \cite{beagle3}. %GB: insert BEAGLE citation %SH: don
+As such, BEAST employs a combination of different types of models (including but not limited to molecular clock models, coalescent models and substitution models) to infer time-calibrated phylogenetic trees from an alignment of time-stamped sequences.
+Additional metadata can be provided to move beyond phylogenetic inference, with sampling locations being the most popular data type, and employing environmental and ecological data for those locations is becoming increasingly popular as they may help uncover the key factors that facilitate or prevent the spread of a pathogen.
+Phylogenetic, phylogeographic and phylodynamic inference -- which focuses on reconstructing trends in a pathogen's population size through time and potentially the factors influencing those trends -- are performed using Bayesian inference through Markov chain Monte Carlo (MCMC) and in doing so make use of BEAGLE, a high-performance computational library for statistical phylogenetics \cite{beagle3}.
 BEAST is widely used in the field of phylodynamics and molecular epidemiology of infectious disease to obtain insights from molecular data through an expanding array of statistical models and estimation procedures. \\
-%Within this framework, it is possible to compare different evolutionary models to find which evolutionary hypothesis fits most with an epidemic processes observed. \\
 
-A specific type of analysis that can be performed within this context is pathogen phylogeographic inference.
-This type of analysis aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of annotated time-scaled phylogenies. We can further extend this framework to integrate epidemiological information as a way to identify potential predictors of spatial spread under a generalized linear model (GLM). Such an approach can allows us to, for example, assess the impact of air travel on the global spread of influenza \cite{glm}. 
-%GB: I would put another sentence here mentioning the GLM paper, the importance of such a GLM, and then use the application to H3N2 in that paper to transition to the next line of text. %SH: done
+Of specific interest here is pathogen phylogeographic inference, a type of analysis that aims to answer the question of ``how did an epidemic spread through space and time?" by jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of (geographically) annotated time-scaled phylogenies.
+We can further extend this framework to integrate epidemiological information as a way to identify potential predictors of spatial spread under a generalized linear model (GLM).
+Such an approach has previously enabled researchers to, for example, assess the impact of air travel on the global spread of influenza \cite{glm}. 
 Because of the flexibility of this framework, Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}. \\
 
-We can use BEAST to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA).
-This method estimates the probability of pathogen transmission between two locations using models analogous to those used for characterising nucleotide substitution probabilities \cite{dta}.
-Recently, a new approach has been developed to integrate individual travel history data into DTA reconstructions in order to obtain more realistic reconstructions of pathogen spread and mitigate sampling bias \cite{travhist}. \\
+BEAST constitutes a popular software package to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA) through Bayesian inference.
+DTA estimates the probability of pathogen transmission between two locations using a continuous--time Markov chain (CTMC) model analogous to those used for characterising nucleotide substitution probabilities \cite{dta}.
+Recently, a new approach has been developed to integrate individual travel history data into DTA reconstructions in order to obtain more realistic reconstructions of pathogen spread and mitigate sampling bias \cite{travhist}. 
+This approach relies on the availability of accurate travel records for infected individuals, in order to have phylogeographic reconstruction not solely rely on the location of where the individual was tested (and found positive) for infection, but to take account the location where the individual was infected before travelling. \\
 
-We here provide four related protocols to reproduce the travel history-aware phylogeographic reconstructions performed in \cite{travhist}. %GB replace 'Lemey et al.' by an actual citation? %SH: done
+We here provide four related protocols to reproduce the travel history-aware phylogeographic reconstructions performed in \cite{travhist}.
 Protocol 1 introduces the GISAID database and provides the required steps to construct a SARS-CoV-2 multiple sequence alignment from the sequences available in GISAID.
 In Protocol 2, we provide instructions on how to set up a generalized linear model analysis for discrete state phylogegraphic inference using BEAUti.
 Protocol 3 introduces an automated script to modify a BEAUti-generated XML file to incorporate travel history data, which can subsequently be run using BEAST.
@@ -71,7 +70,7 @@ Finally in Protocol 4, we guide the user through the process of visualizing indi
 
 \section*{PROTOCOL 1: CREATING A SARS-CoV-2 MSA USING SEQUENCES FROM GISAID}
 
-The first step in any phylogenetic analysis is to obtain a high-quality multiple sequence alignment (MSA).
+The first step in any phylogenetic or phylogeographic analysis is to obtain a high-quality multiple sequence alignment (MSA).
 For SARS-CoV-2 analyses, the largest repository of genomes is available through the GISAID database.
 The GISAID initiative provides a platform to openly share genomic data of influenza viruses as well as SARS-CoV-2 \cite{gisaid}.
 Access to the database is free (\url{https://www.gisaid.org/registration/register/}), but requires the user to register and agree to GISAID's terms of use in order to obtain access.\\
