@@ -69,7 +69,7 @@ These are important considerations because the computationally convenient ancest
 
 
 We here provide four related protocols to reproduce the travel history-aware phylogeographic reconstructions performed in \cite{travhist}.
-Protocol 1 introduces the GISAID database and provides the required steps to construct a SARS-CoV-2 multiple sequence alignment from the sequences available in GISAID.
+Protocol 1 introduces the GISAID database \cite{gisaid} (\url{https://www.gisaid.org/}) and provides the required steps to construct a SARS-CoV-2 multiple sequence alignment from this database.
 In Protocol 2, we provide instructions on how to set up a discrete state phylogeographic inference under the GLM parametrisation using BEAUti, a GUI tool shipped with BEAST.
 Protocol 3 introduces an automated script to modify a BEAUti-generated XML file to incorporate travel history data, which can subsequently be run using BEAST.
 Finally in Protocol 4, we guide the user through the process of visualising individual spatial dispersal histories from the posterior distribution of trees estimated by BEAST.
@@ -78,11 +78,11 @@ Finally in Protocol 4, we guide the user through the process of visualising indi
 \section*{PROTOCOL 1: CREATING A SARS-CoV-2 MSA USING SEQUENCES FROM GISAID}
 
 The first step in any phylogenetic or phylogeographic analysis is to obtain a high-quality multiple sequence alignment (MSA).
-For SARS-CoV-2 analyses, the largest repository of genomes is available through the GISAID database.
-The GISAID initiative provides a platform to openly share genomic data of influenza viruses as well as SARS-CoV-2 \cite{gisaid}.
+The largest publicly accessible repository of genomes is available through the GISAID database.
+The GISAID initiative provides a platform to openly share genomic data of influenza viruses as well as SARS-CoV-2 under specific rules \cite{gisaid}.
 Access to the database is free (\url{https://www.gisaid.org/registration/register/}), but requires the user to register and agree to GISAID's terms of use in order to obtain access.\\
 
-This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloaded from GISAID. In this example, we will construct an alignment for the 282-taxa dataset analysed in \cite{travhist}. 
+This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloaded from GISAID. Specifically, we will construct an alignment for the 282-taxa dataset analysed in \cite{travhist}. 
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
@@ -101,7 +101,7 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 \subsubsection*{Files}
 \hspace{0.5cm}A list of GISAID accession numbers/identifiers. 
 
-\hspace{0.5cm}A FASTA file with the SARS-CoV-2 reference genome UTR sequences.\\
+\hspace{0.5cm}A FASTA file with the untranslated regions (UTR) from the SARS-CoV-2 reference genome sequences.\\
 \ann{Example files can be found at \\
 \url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol1}} 
 
@@ -109,7 +109,7 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 
 Log on to GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to access a table with all available SARS-CoV-2 sequences in the database. To bulk download sequences by accession ID, click on the Fulltext{\Large $\blacktriangleup$} button, paste your comma-separated list of accessions (see Files for an example) in the search box, and download the FASTA sequences using the download button (Figure \ref{fig:GISAID}). In this example, we will save the sequences in a file called \code{gisaid\_selection.fasta}.\\ 
 
-\ann{We can also use the \code{EpiCoV} Browse portal to download a custom selection of genomes. On the header section of the table you will see multiple search fields and drop-down menus to filter sequences according to you desired criteria.}
+\ann{We can also use the \code{EpiCoV} Browse portal to download a custom selection of genomes. On the header section of the table you will see multiple search fields and drop-down menus to filter sequences according to different criteria.}
 
 
 \begin{figure}[!ht]
@@ -125,7 +125,7 @@ Log on to GISAID and click on \code{EpiCoV\textsuperscript{TM}}'s Browse tab to 
 sed -i.bkp "s/ /_/g" gisaid_selection.fasta 
 \end{verbatim}
 
-\ann{To avoid potential issues when parsing the FASTA headers, we replace all whitespace in the file with underscores using \code{sed}.  We use the \code{-i} flag to find and replace the file in-place while keeping a backup of the original file.}
+\ann{To avoid potential issues when parsing the FASTA headers with whitespaces (e.g. in country names), we replace all whitespace in the file with underscores using \code{sed}.  We use the \code{-i} flag to find and replace the file in-place while keeping a backup of the original file.}
 
 3. Align the sequences using MAFFT
 \begin{verbatim}
@@ -133,7 +133,7 @@ cat utr.fasta >> gisaid_selection.fasta
 mafft --thread -1 --nomemsave gisaid_selection.fasta > gisaid_aln.fasta
 \end{verbatim}
 
-\ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' untranslated regions (UTR) of the SARS-CoV-2 genome (see example files).
+\ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' UTRs of the SARS-CoV-2 genome (see example files).
 We do this so that we can later trim these regions from the final alignment.
 We concatenate these sequences to the FASTA file containing our genomes of interest, and align all sequences using MAFFT.} %GB: how about mentioning here how many positions are in this alignment (i.e. after running MAFFT)? could be useful for people going through the steps; alternatively, how about providing this alignment in supplementary material? %SH: We can't provide the alignment because we are not allowed to share GISAID data outside of GISAID per their rules . 
 
@@ -450,7 +450,7 @@ plotPaths(travelHistPaths$paths, locationMap = locationMap,
 \end{figure}
 
 
-\section*{GUIDELINES FOR UNDERSTANDING RESULTS}
+\section*{GUIDELINES FOR INTERPRETING RESULTS}
 
 The BEAST software package offers a flexible approach for combining demographic, molecular clock, nucleotide and trait evolution models to infer time-scaled trait-annotated phylogenies.
 BEAST employs Bayesian inference through MCMC to sample trees and all of the model parameters from the joint density (often simply called the posterior).
