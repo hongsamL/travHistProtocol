@@ -152,13 +152,13 @@ Remove the now-empty reference sequences and save the trimmed MSA (Figure \ref{f
 
 \section*{PROTOCOL 2: SETTING UP A DISCRETE TRAIT PHYLOGEOGRAPHIC RECONSTRUCTION IN BEAUTI}
 
-Performing Bayesian phylogeographic inference while accommodating individual travel history data constitutes an extension of traditional Bayesian DTA \cite{dta} available in BEAST.
-BEAUti is an interactive graphical application that enables to design the analysis you want to perform in BEAST and generates an XML file that will serve as the input file for BEAST.
-This XML file contains all the required data, the models (and priors) that were selected in BEAUti, and the computational settings which will be used to run the MCMC algorithm that will collect samples of all relevant parameters (including the phylogenetic tree with annotated ancestral locations) from the joint density. \\ 
+Performing Bayesian phylogeographic inference while accommodating individual travel history data constitutes an extension of the standard Bayesian ancestral reconstruction approach available in BEAST \cite{dta}.
+We will first generate an XML file for the phylogeographic inference using the interactive BEAUti graphical application, which will serve as a basis for Protocol 3. BEAUti facilitates the design of the analysis you want to perform in BEAST and generates an XML file that will serve as the input file for BEAST or as the basis for manually specifying advanced models not available in BEAUti.
+The BEAUti-generated XML file contains all the required data, the models (and priors) that were selected in BEAUti, and the computational settings which will be used to run the MCMC algorithm that will collect samples of all relevant parameters (including the phylogenetic tree with annotated ancestral locations) from the joint density. \\ 
 
-This protocol describes how to set up a DTA analysis with a generalized linear model (GLM) extension to simultaneously reconstruct spatiotemporal history and test the contribution of potential predictors of spatial spread using BEAST \cite{glm}.
-Such an approach parameterizes each rate of among-location movement in the phylogeographic model as a log linear function of the provided predictors.
-In this example, we will use the MSA generated in Protocol 1 to set up a DTA+GLM phylogeographic reconstruction using a flight connectivity matrix and a great-circle distance matrix as covariates (but see \cite{travhist} for more detailed information).
+This protocol describes how to set up a phylogeographic analysis with a GLM extension to simultaneously reconstruct spatiotemporal history and test the contribution of potential predictors of spatial spread using BEAST \cite{glm}.
+This  extension parameterises each rate of among-location movement in the phylogeographic model as a log linear function of the provided predictors.
+In this example, we will use the MSA generated in Protocol 1 to set up a phylogeographic GLM reconstruction using a flight connectivity matrix and a great-circle distance matrix as covariates (but see \cite{travhist} for more detailed information). %PL: BTW: it would not have been hard to generate the GLM that we used by also providing a .csv with 0's, 1's  and -1s to indicate rates from and to Hubei, and not selecting ln-transformation and standardization
 
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
@@ -186,7 +186,7 @@ Load the MSA into BEAUti by selecting Import Data from the File menu (do not use
 
 Select the Tips tab and check the ``Use tip dates" box. By default, all taxa will show as having a date of zero (i.e. all sequences were sampled at the same time in the present).
 To specify each sampling date, select ``Import Dates" and load the metadata file. This metadata file contains a tab separated table mapping the FASTA header of each sequence in the alignment with the corresponding sampling date. When loading the file, select the ``Parse calendar dates with variable precision" option.
-This allows for taxon dates to have different degrees of resolution (e.g. year-month-day vs. year-month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision'' in the ``Tip date sampling" menu at the bottom of the table. \\
+This allows for taxon dates to have different degrees of resolution (e.g. year-month-day vs. year-month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision'' in the ``Tip date sampling" menu at the bottom of the table. \\ %PL: if I remember well, there was (eventually) only one taxon without exact date of sampling (Hefei/2/2020|EPI_ISL_412026|China|Anhui|Hefei|NA|2020-02)? I say eventually because I found a set of dates in BEAST2 xml from Volz on a repo that were not in Genbank. If so, let's point that out
 
 \ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Parse Dates", and specify the rules for delimiting the date from all taxon labels. For an example of what this looks like, see \cite{skyprot} Figure 2a.}
 
@@ -209,7 +209,7 @@ This will create a new trait for each column on the metadata file. Delete all no
 
 4. Set up the nucleotide and trait substitution models\\
 
-Click on the ``Sites" tab. Following \cite{travhist}, we will specify an HKY+$\Gamma$ nucleotide substitution model, and a GLM for the location trait.
+Click on the ``Sites" tab. Following \cite{travhist}, we will specify an HKY+$\Gamma$ nucleotide substitution model, and a GLM-CTMC for the location trait.
 Load the covariates by clicking on ``Setup GLM'' and ``Import Predictors'' (Figure \ref{fig:GLM}). In this example, we inform the rates of spread between locations using two predictors: a flight matrix containing air travel data between locations, and a distance matrix containing intra-continental distances. %GB: why is the distance matrix intra-continental while the flight matrix connects the locations? %SH: Not sure about this, my intuition is telling me it may be as a proxy to non-air travel, Philippe? %PL: indeed, I don't really see how transcontinental travel is by anything other than air travel. We can have many transcontinental transitions due to air travel, so making distance a poor predictor, while it could still be a reasonable one within continents (indeed as proxy to non-air travel).
 Check the ``Log'' and ``Std'' boxes to log-transform and standardize the GLM predictors.\\
 
@@ -261,7 +261,8 @@ The parameters associated with these transition kernels tend to converge rapidly
 Decrease the weight of these operators to 0.25, but leave the weights of the other transition kernels at their default values, to sample these parameters less frequently so that the analysis gets to spend more time on estimating other parameters of interest.\\
 
 \ann{Transition kernels (called ``operators'' in BEAST) are used to propose new values for each parameter being estimated during the analysis.
-Different combinations of transition kernels can be used to fix certain parameters and customize the analysis as needed (e.g. estimating spatial spread on a fixed user-provided tree).}
+Different combinations of transition kernels can be used to fix certain parameters %PL: this a bit oddly formulated. I would explicitly say that to 'fix' parameters we remove transition kernels on these parameters, in whihc case their starting values serve as the fixed values
+and customize the analysis as needed (e.g. estimating spatial spread on a fixed user-provided tree).}
 
 10. Set up the MCMC options and generate the BEAST XML file\\
 
@@ -269,22 +270,22 @@ Click on the ``MCMC" tab. Set ``Length of chain" to 200,000,000 states and ``Log
 This will thin the MCMC results so that only 2,000 samples are collected by the end of the run.
 Set your file name stem to generate the desired output file names (e.g. \texttt{282\_GISAID\_sarscov2}), and click on ``Generate BEAST File" to create the BEAST XML file for this analysis.\\
 
-\ann{Thinning consists of storing only every $n$th sample from an MCMC analysis. This subsampling technique is done to decrease the autocorrelation in the samples collected and reduce the file size of the output. This is important since Bayesian phylogenetic analyses often require very long chains, and storing every single state would be prohibitive for file storage.}
+\ann{Thinning consists of storing only every $n$th sample from an MCMC analysis. This subsampling is performed to decrease the autocorrelation in the posterior sample and reduce the file size of the output. This can be important since Bayesian phylogenetic analyses often require very long chains, and storing every single state would be prohibitive for file storage.}
 
 
 \section*{PROTOCOL 3: PHYLOGEOGRAPHIC RECONSTRUCTION INCORPORATING TRAVEL HISTORY INFORMATION}
 
-Phylogeographic reconstruction using DTA has been shown to be sensitive to spatiotemporal sampling bias. The ancestral reconstruction of locations will depend on the availability of samples from each location. In practice, this means that over/undersampling of sequences from a given location can greatly impact the ancestral locations being reconstructed. One way to mitigate sampling bias is through the incorporation of available travel history information from infected individuals. Travel history data can be used to correct for gaps in sampling by allowing for ancestral nodes to be in a given location even when molecular sequence data for that location are not available.\\
+Phylogeographic reconstruction using discrete locations has been shown to be sensitive to spatiotemporal sampling bias. The ancestral reconstruction of locations will depend on the availability of samples from each location. In practice, this means that over/undersampling of sequences from a given location can greatly impact the estimated ancestral locations. One way to mitigate sampling bias is through the incorporation of available travel history information from infected individuals. Travel history data can be used to correct for gaps in sampling by allowing for ancestral nodes to be in a given location even when molecular sequence data for that location are not available.\\
 
-This protocol explains how augment a DTA analysis generated in BEAUti by incorporating individual travel history data.
+This protocol explains how augment a phylogeographic analysis generated in BEAUti by incorporating individual travel history data.
 In this example, we will use the XML file generated in Protocol 2 and modify it to include the available travel history data (See \cite{travhist} for more detailed information).
-Importantly, BEAST requires its accompanying high-performance computational library for statistical phylogenetics -- known as BEAGLE \cite{beagle3} -- to be installed in order to optimise computational performance on a variety of hardware resources.
+Importantly, BEAST requires the high-performance BEAGLE library \cite{beagle3} to be installed in order to optimise computational performance on a variety of hardware resources.
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
 \hspace{0.5cm}Standard computer running Linux, MacOS, or Windows.
 
-\hspace{0.5cm}CUDA-compatible Graphics Processing Unit (optional but recommended)
+\hspace{0.5cm}A CUDA-compatible Graphics Processing Unit is optional, but recommended for speeding up the analyses
 
 \subsubsection*{Software}
 \hspace{0.5cm}Python v3.6+ with packages numpy and lxml
@@ -296,13 +297,13 @@ Importantly, BEAST requires its accompanying high-performance computational libr
 \hspace{0.5cm}\verb|add_travel_history.py| Python script (provided with this protocol)
 
 \subsubsection*{Files}
-XML file for a DTA+GLM analysis set up in BEAUti \\
+XML file for a phylogeographic analysis (using a GLM  parameterisation) set up in BEAUti \\
 Travel history metadata CSV file \\
 Augmented covariate data files \\
 
 \ann{Example files are provided in the repository {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol3}}. %GB: replace with actual github link. %SH fixed
-The example in this protocol assumes an XML file for a DTA+GLM phylogeographic reconstruction with new travel history locations not present in the original BEAST XML file generated by BEAUti.
-Covariate files augmented to include the new locations are thus required to accommodate for the increase in state space.}
+The example in this protocol assumes an XML file for a phylogeographic GLM reconstruction with new travel history locations not present in the original BEAST XML file generated by BEAUti.
+Covariate files augmented to include the new locations are thus required to accommodate for the increase in location state space.}
 
 1. Update the BEAST XML file to incorporate travel history data
 \begin{verbatim}
@@ -313,7 +314,7 @@ python add_travel_history.py --xml 282_GISAID_sarscov2.xml
         --out 282_GISAID_sarscov2_travelHist.xml
 \end{verbatim}
 
-\ann{Although this example uses a DTA+GLM analysis, the\code{add\_travel\_history.py} script also works for symmetric and asymmetric DTA analyses. For such cases, run the same command without the\code{--covariate} flags. This script also requires for the travel history metadata to follow a specific format (Figure \ref{fig:travmeta}).
+\ann{Although this example uses a phylogeographic GLM analysis, the\code{add\_travel\_history.py} script also works for standard discrete phylogeographic models using symmetric and asymmetric CTMC parametrizations. For such cases, run the same command without the\code{--covariate} flags. This script also requires for the travel history metadata to follow a specific format (Figure \ref{fig:travmeta}).
 The metadata file is in CSV format and must contain the following columns: ``name"  (taxon name), ``travelHistory"  (travel location), ``travelDays"  (date of travel as days before to sampling date), ``priorMean"  and ``priorStdev"  
 (prior specifications for the mean and standard deviation of a normal prior on travel dates when exact data are unavailable).}
 
@@ -334,14 +335,15 @@ java -cp beast.jar dr.app.beast.BeastMain -seed 2020
          282_GISAID_sarscov2_travelHist.xml
 \end{verbatim}
 
-\ann{Here, we run BEAST on the command line using the latest build of BEAST. You can create your own beast.jar file by checking out and compiling the main branch of the \code{beast-mcmc} GitHub repository. We specify a starting seed with the -seed flag, and use the \code{-beagle\_cuda} flag to accelerate the likelihood computations using a GPU (only applicable if you have a powerful GPU with sufficient double precision -- or FP64 -- compute performance available).
+\ann{Here, we run BEAST on the command line using the latest build of BEAST. You can create your own beast.jar file by checking out and compiling the main branch of the \code{beast-mcmc} GitHub repository. We specify a starting seed with the -seed flag, and use the \code{-beagle\_cuda} flag %PL: you mean the -beagle_gpu flag, right?
+to accelerate the likelihood computations using a GPU (only applicable if you have a powerful GPU with sufficient double precision -- or FP64 -- compute performance available).
 This option is recommended when available, as using a GPU reduces runtime by accelerating likelihood computations when performing phylogeographical analyses on large datasets.
-Be sure to check the technical specifications of the GPU you want to use; you'll ideally want at least 3 TFLOPS FP64 performance.
+Be sure to check the technical specifications of the GPU you want to use; ideally, at least 3 TFLOPS FP64 performance is recommend.
 We also take advantage of the BEAST checkpointing functionality \cite{onlineBEAST} to save a snapshot of the MCMC run into the travelHist.checkpoint file every 1,000,000 states.
 This allows us to resume the analysis from the checkpoint in case the run becomes interrupted, or more iterations are required than initially anticipated.}
 
 
-\section*{PROTOCOL 4: VISUALIZING INDIVIDUAL-SPECIFIC SPATIAL TRAJECTORIES}
+\section*{PROTOCOL 4: VISUALIZING ANCESTRAL SPATIAL TRAJECTORIES FOR SPECIFIC TAXA}
 \subsection*{\textbf{\textit{Necessary Resources}}}
 \subsubsection*{Hardware}
 Standard computer running Linux, MacOS, or Windows. 
@@ -351,10 +353,10 @@ Standard computer running Linux, MacOS, or Windows.
 
 \hspace{0.5cm}Latest BEAST jar file (v1.10.5) (provided with this protocol)
 
-\hspace{0.5cm}R with package MarkovJumpR
+\hspace{0.5cm}R with package MarkovJumpR %PL: add URL?
 
 \subsubsection*{Files}
-Trees output from a BEAST travel history DTA+GLM analysis \\
+Trees output from a BEAST phylogeographic analysis with travel history\\
 
 1. Extract all Markov jump histories for an isolate of interest
 \begin{verbatim}
@@ -368,7 +370,7 @@ java -cp beast.jar dr.app.tools.TaxaMarkovJumpHistoryAnalyzer
 
 \ann{The BEAST jar file packages a number of standalone applications that can be accessed by using the -cp flag when calling Java from the command line.
 Here, we use the TaxaMarkovJumpHistoryAnalyzer application to extract all Markov jump histories for isolate EPI\_ISL\_413016, into a CSV file.
-This application takes a trees file with complete state change history as an input (which is being generated by running the XML constructed in the protocol), and outputs all spatial trajectories for a selection of taxon/taxa.
+This application takes a trees file with complete Markov jump or state change history as an input (which is being generated by running the XML constructed in the protocol), and outputs the posterior set of spatial trajectories for a taxon or selection of taxa.
 We specify the desired taxon labels through the\code{-taxaToProcess} flag, and specify the annotation name of the discrete trait that was reconstructed using \code{-stateAnnotation}.
 We can also remove a number of trees corresponding to the burn-in using the \code{-burnin} flag, and scale the output results to reflect chronological time instead of node heights using the \code{-msrd} flag by specifying the most recent sampling date.
 An example output file can be found in {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol1}}}
@@ -461,7 +463,7 @@ Here we present some of the standard applications that are commonly used to inte
 \subsection*{Assessing convergence}
 
 The MCMC sampling strategy is to construct a Markov chain that (eventually) converges to a stationary distribution, which is the joint density in the case of Bayesian inference.
-Given enough time we know that the chain will converge, but it may take considerable time for this to happen. We can visually assess the convergence of a BEAST run by inspecting the sampled parameter values across an MCMC analysis.
+For complex models and data sets, it may take considerable time for a chain to converge. We can visually assess the convergence of a BEAST run by inspecting the sampled parameter values across an MCMC analysis.
 To do so, we can load a\code{.log} file into Tracer (\url{https://beast.community/tracer}, \cite{tracer}), %GB: add citation for Tracer publication %SH: done
  and visually inspect the trace plot, which shows a time series of the parameter values sampled throughout the analysis.
 A detailed guide on how to use Tracer can be found at \url{https://beast.community/tracer_convergence.html}
@@ -474,52 +476,51 @@ A characteristic of inference through MCMC is that the samples collected tend to
 This in turn poses a challenge, since having a large number of samples does not guarantee a considerable reduction of the uncertainty in our posterior estimates.
 A way to control for this is to look at the ESS value associated with parameter estimation.
 The ESS of a parameter sampled from an MCMC method is the number of effectively independent draws from the posterior distribution that the Markov chain is equivalent to.
-ESS values will increase as more and more samples are collected by the sampler.
+ESS values are expected to increase as an increasing number of samples are collected.
 Higher ESS values will result in more precise posterior estimates but require higher computational resources.
-Tracer will automatically calculate the ESS for all parameters part of the log file, and flag values above 100 (acceptable) and 200 (ideal).
+Tracer will automatically calculate the ESS for all parameters part of the log file, and flag values above100 and 200 (preferable).
 
 \subsection*{Summarizing trees and phylogeographic estimates}
 
-Individually inspecting every tree from the posterior obviously constitutes an impractical way to interpret the MCMC results. We are thus required to summarize the distribution of trees sampled as a point estimate with associated uncertainties. The TreeAnnotator application in BEAST enables creating a maximum clade credibility (MCC) tree to summarize the sampled trees for this purpose. For every tree in the distribution, a posterior clade probability for each node (i.e. the support for a node) is calculated by computing the frequency of the clustering that is defined by the node in question. The MCC tree is then defined as the tree that maximizes the product of the posterior clade probabilities across the tree. Instructions on how to use TreeAnnotator can be found at \url{beast.community/second_tutorial}. \\
+Individually inspecting every tree from the posterior obviously constitutes an impractical way to interpret the MCMC results. We are thus required to summarize the distribution of trees sampled as a point estimate with associated uncertainties. The TreeAnnotator application in BEAST enables creating a maximum clade credibility (MCC) tree to summarize the sampled trees for this purpose. For every tree in the distribution, a posterior clade probability for each node (i.e. the support for a node) is calculated by computing the frequency of the clustering that is defined by the relevant node. The MCC tree is then defined as the tree that maximizes the product of the posterior clade probabilities across the tree. Instructions on how to use TreeAnnotator can be found at \url{beast.community/second_tutorial}. \\
 
-In some data sets, the posterior support for all nodes in a tree is such that many topologies do not end up represented in the MCC tree.
-When that is the case, a point estimate of a tree is unable to capture the diverse phylogeographic histories compatible with the data. Protocol 4 allows us to inspect individual spatial trajectories by summarizing across all possible phylogenetic ancestries in the joint density. Each spatial trajectory in the joint density is represented by a stepwise curve, where vertical lines represent transitions between two locations, and horizontal lines time intervals where the pathogen remains in the same location. The relative density of lines reflects the posterior uncertainty in spatiotemporal ancestry.
+In some data sets, the posterior support for all nodes in a tree is such that many clusters in sampled topologies do not end up represented in the MCC tree. When that is the case, a point estimate of a tree is unable to capture the diverse phylogeographic histories compatible with the data. Protocol 4 allows us to inspect individual spatial trajectories by summarizing across all possible phylogenetic ancestries in the joint density. This was proposed as a visual summary for SARS-CoV-2 phylogeographic inferences that are poorly resolved. Each spatial trajectory in the joint density is represented by a stepwise curve, where vertical lines represent transitions between two locations, and horizontal lines time intervals during which the pathogen remains in the same location. The relative density of lines reflects the posterior uncertainty in spatiotemporal ancestry.
 
 \begin{multicols}{2}
 
 \section*{COMMENTARY}
 \subsection*{Background Information}
 
-Models for phylogeographic inference can be broadly categorized into two classes or types, depending on the assumptions used to model the spatial spread of a pathogen.
-Structured coalescent approaches model movement in terms of a migration matrix, and relate migration rates with a location's population size, which involves population size dynamics having to be estimated for each location \cite{basta,mascot}.
-On the other hand, diffusion approaches consider sampling locations as observed traits independent from the tree-generative process, and model movement across space using a continuous-time Markov chain (CTMC) \cite{dta,rw}. 
-While structured coalescent approaches are theoretically a more robust, the lack of computationally efficient implementations (especially for larger datasets) has made diffusion methods more widely adopted.
-Currently, BEAST v1.10.5 focuses on providing phylogeographic inference using CTMC models in the case of discrete location data.
+Modern models for phylogeographic inference can be broadly categorized into two classes or types, depending on the assumptions used to model the spatial spread of a pathogen.
+Structured coalescent approaches model movement in terms of a migration matrix, and relate migration rates with a population sizes in a location and therefore involves population size dynamics estimates for each location \cite{basta,mascot}.
+On the other hand, diffusion approaches consider sampling locations as observed traits independent from the tree-generative process, and model movement across space using a random walk process \cite{dta,rw}. 
+Structured coalescent models are more robust to sampling bias, but due to the difficulty to scale this approach to larger datasets diffusion methods remain popular.
+Currently, BEAST v1.10.5 focuses on providing phylogeographic inference using CTMC models for discrete location data.
 
-Diffusion models for phylogeographic inference can be further categorized depending on the spatial resolution being considered.
-Discrete locations are modeled using discrete trait analysis (DTA), with transition rates between locations in the form of a CTMC matrix analogous to those used to model nucleotide substitutions \cite{dta}.
+Diffusion models for phylogeographic inference can be further categorized depending on the location data type used.
+Discrete locations are parameterised using the same CTMC models as used for the sequence substitution process \cite{dta}.
 In contrast, continuous locations are modeled using Brownian diffusion-based random walk models \cite{rw}.
-Much of the genomic data collected has a spatial resolution coarser than latitude and longitude, which makes DTA the only practical approach to study the spread of an epidemic. 
+Much of the genomic data collected has a spatial resolution coarser than latitude and longitude, which restricts phylogeographic applications to the discrete approach. 
 
-Under the DTA formulation, movement between K discrete locations is parameterized in terms of a $K \times K$ infinitesimal rate matrix $\Lambda$, where $\Lambda_{ij}$ is the instantaneous movement rate from location $i$ to $j$. This model has been extended to allow for symmetrical and asymmetrical transition rates, and uses Bayesian Stochastic Search Variable Selection (BSSVS) to limit the number of rates to only those that adequately explain the phylogenetic diffusion process. An alternative formulation of this model parameterizes the rate matrix using a generalized linear model \cite{glm}. Here, the transition rates are defined as a linear combination of $P$ of potential explanatory predictors $(x_{ij1}, \dots, x_{ijP})$, with corresponding coefficients $(\beta_1, ..., \beta_P )$ and indicator variables $(\delta_1, ..., \delta_P )$ such that log$(\Lambda_{ij}) = \sum_{p=1}^P \beta_p \delta_p x_{ijp}$. This model specification allows us to use BSSVS to explore the space of $2^P$ predictor combinations and obtain a posterior probability on the indicator variables to determine the support for inclusion of each predictor in the model.
+The CTMC parameterisation models movement between $K$ discrete locations in terms of a $K \times K$ infinitesimal rate matrix $\Lambda$, where $\Lambda_{ij}$ is the instantaneous movement rate from location $i$ to $j$. Parametrizations are available for both symmetrical and asymmetrical transition rates, and extensions adopt Bayesian Stochastic Search Variable Selection (BSSVS) to limit the number of rates to only those that adequately explain the phylogenetic diffusion process. The GLM parametrization models the transition rates as a log linear combination of $P$ of potential explanatory predictors $(x_{ij1}, \dots, x_{ijP})$, with corresponding coefficients $(\beta_1, ..., \beta_P )$ and indicator variables $(\delta_1, ..., \delta_P )$ such that log$(\Lambda_{ij}) = \sum_{p=1}^P \beta_p \delta_p x_{ijp}$. This model specification allows us to use BSSVS to explore the space of $2^P$ predictor combinations and obtain a posterior probability on the indicator variables in order to determine the support for inclusion of each predictor in the model.
 
-Incorporating individual travel history data does not require the use of a GLM and can be added to both symmetric or asymmetric DTA \cite{dta}) by augmenting the available dataset to include ancestral nodes associated with a known state but not necessarily with a known sequence \cite{travhist}.
-These ``ghost samples'' enable exploiting individual travel cases for which molecular sequence data could not be obtained.
+Incorporating individual travel history data does not require the use of a GLM and can be used with standard CTMC models \cite{dta}) by augmenting the available dataset to include ancestral nodes associated with a known state but not necessarily with a known sequence \cite{travhist}.
+This provides a richer source of information for phylogeographic reconstructions as compared to only using sampling location.
 Ambiguous ancestral locations can also be allowed by integrating over the all possible locations with equal or user specified weights \cite{ambig}.
 An example would be the case where an individual traveled to multiple locations prior to being sampled.
-Given that the individual could have gotten infected in any of the visited countries, we can integrate this uncertainty by marginalizing over all potential locations for the unsampled ancestor when performing phylogeographic inference.
+Given that the individual may have become infected in any of the visited countries, we can integrate this uncertainty by marginalizing over all possible locations for the unsampled ancestor when performing phylogeographic inference.
 
 
 \section*{CRITICAL PARAMETERS AND TROUBLESHOOTING}
 
-A critical assumption for any BEAST analysis is that the data set under consideration constitutes a sample from a measurably evolving population (MEP). MEPs \cite{mep1,mep2} refer to time-stamped sequence data where a sufficient amount of molecular evolution has occurred throughout the sampling period to establish a statistical relationship between genetic divergence and time. A data set conforming to this criteria is said to contain sufficient temporal signal. A lack of temporal signal will ultimately result in flawed analyses with unreliable divergence time estimates. Popular ways to assess temporal signal include doing a root-to-tip regression of genetic divergence and sampling times on a maximum likelihood tree \cite{tempest} and permutating tip date labels through date-randomization \cite{tipdate}. Recently, a formal way to assess temporal signal has been developed under a Bayesian framework using model comparison through Bayes factors \cite{bets}. In cases where the temporal signal is deemed insufficiently strong, one can resort to adding more data to increase temporal coverage or using prior knowledge to inform the molecular clock rate or the time to the most recent common ancestor.
+A critical assumption for any BEAST analysis is that the data set under consideration constitutes a sample from a measurably evolving population (MEP). MEPs \cite{mep1,mep2} refer to time-stamped sequence data where a sufficient amount of molecular evolution has occurred throughout the sampling period to establish a statistical relationship between genetic divergence and time. A data set conforming to this criteria is said to contain sufficient temporal signal. A lack of temporal signal may result in poor behavior and unreliable divergence time estimates. Popular ways to assess temporal signal include explorations through root-to-tip regression of genetic divergence and sampling times based on maximum likelihood trees \cite{tempest} and permutating tip date labels through date-randomization \cite{tipdate}. Recently, a formal way to assess temporal signal has been developed in a Bayesian framework using model comparison through Bayes factors \cite{bets}. In cases where the temporal signal is deemed insufficiently strong, one can resort to adding more data to increase temporal coverage or using prior knowledge to inform the molecular clock rate or specific divergence times.
 
-Another commonly encountered issue is that of low ESS values for parameters relevant to the analysis. At the end of a BEAST analysis, some parameters may have much higher ESS values associated to them compared to others. One way to increase the ESS values of a parameter is to decrease the weight of other parameters that have been able to attain sufficiently high (or very high) ESS values to increase the sampling frequency of the (problematic) parameter of interest (e.g. Protocol 2, step 9). Other ways to obtain more samples -- and as a result increase the ESS value -- include increasing the MCMC chain length and combining the output of multiple independent BEAST analyses, i.e. analysing the same XML file using BEAST but with different starting seeds.
+Another commonly encountered issue is that of low ESS values for parameters relevant to the analysis. At the end of a BEAST analysis, some parameters may have much higher ESS values associated to them compared to others. One way to increase the ESS values of a parameter is to increase the weight of the relevant operator in order to increase the sampling frequency of the (problematic) parameter (e.g. Protocol 2, step 9). Other ways to obtain more samples -- and as a result increase the ESS value -- include increasing the MCMC chain length and combining the output of multiple independent BEAST analyses, i.e. analysing the same XML file using BEAST but with different starting seeds.
 
 
 \section*{SUGGESTIONS FOR FURTHER ANALYSIS}
 
-This section is optional but I'm open for suggestions.
+This section is optional but I'm open for suggestions. %PL: either drop it or simply invite the reader to go an have a look at the tutorials on beast.community to explore other analyses.
 
 
 
