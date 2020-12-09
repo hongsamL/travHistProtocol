@@ -16,9 +16,9 @@ def load_xml(xmlfile):
 def load_hist(c):
     columns = defaultdict(list)
     with open(c) as f:
-        reader = csv.DictReader(f)
+        reader = csv.DictReader(f,skipinitialspace=True)
         assert set(['name','travelHistory','travelDays','priorMean','priorStdev']).issubset(set(reader.fieldnames)),\
-                "Cannot find column names in csv file, please check documentation for appropriate formatting"
+                "Cannot find all required column names in travel history csv file, please check documentation for appropriate formatting"
         for row in reader:
             for (col,value) in row.items():
                 columns[col].append(value)
@@ -128,6 +128,7 @@ def parse_covariate(covname):
     except:
         "Matrix contains non-numeric entries"
     cov_name = mat[0,0]
+    assert cov_name !="",f"{covname} missing covariate name, the name of the covariate should match the XML and be in the (0,0) entry"
     assert list(mat[1:,0])==list(mat[0,1:]),f'Column names do not match row names in covariate {cov_name}'
     state_names = list(mat[1:,0])
     assert values.shape[0] == values.shape[1], f'Covariate {cov_name} matrix is not square'
@@ -372,3 +373,4 @@ if __name__ == "__main__":
     edit_markov_jumps_tree_likelihood(xml)
     edit_tree_logs(xml)
     write_xml(xml,args.out)
+    print(f"Done writing file to {args.out}")
