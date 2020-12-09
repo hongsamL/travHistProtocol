@@ -103,7 +103,7 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 
 \hspace{0.5cm}A FASTA file with the untranslated regions (UTR) from the SARS-CoV-2 reference genome sequences.\\
 \ann{Example files can be found at \\
-\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol1}} 
+{\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol1}}} 
 
 1. Search and download the desired sequences in the GISAID database \\
 
@@ -158,7 +158,7 @@ The BEAUti-generated XML file contains all the required data, the models (and pr
 
 This protocol describes how to set up a phylogeographic analysis with a GLM extension to simultaneously reconstruct spatiotemporal history and test the contribution of potential predictors of spatial spread using BEAST \cite{glm}.
 This  extension parameterises each rate of among-location movement in the phylogeographic model as a log linear function of the provided predictors.
-In this example, we will use the MSA generated in Protocol 1 to set up a phylogeographic GLM reconstruction using a flight connectivity matrix and a great-circle distance matrix as covariates (but see \cite{travhist} for more detailed information). %PL: BTW: it would not have been hard to generate the GLM that we used by also providing a .csv with 0's, 1's  and -1s to indicate rates from and to Hubei, and not selecting ln-transformation and standardization
+In this example, we will use the MSA generated in Protocol 1 to set up a phylogeographic GLM reconstruction using a flight connectivity matrix, a great-circle distance matrix and an asymmetry matrix as covariates (but see \cite{travhist} for more detailed information).
 
 
 \subsection*{\textbf{\textit{Necessary Resources}}}
@@ -186,7 +186,7 @@ Load the MSA into BEAUti by selecting Import Data from the File menu (do not use
 
 Select the Tips tab and check the ``Use tip dates" box. By default, all taxa will show as having a date of zero (i.e. all sequences were sampled at the same time in the present).
 To specify each sampling date, select ``Import Dates" and load the metadata file. This metadata file contains a tab separated table mapping the FASTA header of each sequence in the alignment with the corresponding sampling date. When loading the file, select the ``Parse calendar dates with variable precision" option.
-This allows for taxon dates to have different degrees of resolution (e.g. year-month-day vs. year-month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision'' in the ``Tip date sampling" menu at the bottom of the table. \\ %PL: if I remember well, there was (eventually) only one taxon without exact date of sampling (Hefei/2/2020|EPI_ISL_412026|China|Anhui|Hefei|NA|2020-02)? I say eventually because I found a set of dates in BEAST2 xml from Volz on a repo that were not in Genbank. If so, let's point that out
+This allows for taxon dates to have different degrees of resolution (e.g. year-month-day vs. year-month). We estimate the sampling dates for those sequences without day-level resolution by selecting ``Sampling uniformly from precision'' in the ``Tip date sampling" menu at the bottom of the table. \\ %PL: if I remember well, there was (eventually) only one taxon without exact date of sampling (Hefei/2/2020|EPI_ISL_412026|China|Anhui|Hefei|NA|2020-02)? I say eventually because I found a set of dates in BEAST2 xml from Volz on a repo that were not in Genbank. If so, let's point that out %SH The example file I'm using is GISAID metadata. EPI_ISL_412026 here has a date, but other isolates don't have a complete resolution. Do you know which Volz xml you got the dates from? I will add how the dates in the paper are different in a readme file in the repo.
 
 \ann{It is also possible to specify the sampling dates without using a metadata file. This is done by parsing the FASTA headers of each sequence. To do this, click on ``Parse Dates", and specify the rules for delimiting the date from all taxon labels. For an example of what this looks like, see \cite{skyprot} Figure 2a.}
 
@@ -210,12 +210,11 @@ This will create a new trait for each column on the metadata file. Delete all no
 4. Set up the nucleotide and trait substitution models\\
 
 Click on the ``Sites" tab. Following \cite{travhist}, we will specify an HKY+$\Gamma$ nucleotide substitution model, and a GLM-CTMC for the location trait.
-Load the covariates by clicking on ``Setup GLM'' and ``Import Predictors'' (Figure \ref{fig:GLM}). In this example, we inform the rates of spread between locations using two predictors: a flight matrix containing air travel data between locations, and a distance matrix containing intra-continental distances. %GB: why is the distance matrix intra-continental while the flight matrix connects the locations? %SH: Not sure about this, my intuition is telling me it may be as a proxy to non-air travel, Philippe? %PL: indeed, I don't really see how transcontinental travel is by anything other than air travel. We can have many transcontinental transitions due to air travel, so making distance a poor predictor, while it could still be a reasonable one within continents (indeed as proxy to non-air travel).
-Check the ``Log'' and ``Std'' boxes to log-transform and standardize the GLM predictors.\\
+Load the covariates by clicking on ``Setup GLM'' and ``Import Predictors'' (Figure \ref{fig:GLM}). In this example, we inform the rates of spread between locations using three predictors: a flight matrix containing air travel data between locations, a distance matrix containing intra-continental distances, and an asymmetry matrix where entries for transitions ``from" and ``to" Hubei are denoted with 1 and -1 respectively.
+Check the ``Log'' and ``Std'' boxes to log-transform and standardize the air travel and distance GLM predictors.\\
 
 \ann{In this context, the terms `predictor' and `covariate' are used interchangeably.  
-By default, each predictor name will be the same as the name of the file it originates from. Non-pairwise covariates can also be setup as origin and destination predictors in this window. Predictor files are comma-separated value (CSV) files formatted in two different ways depending on the nature of the predictor. For pairwise predictors, the CSV file is in the form of a square matrix with the different locations as column and row names alphabetically ordered, with rows denoting the origin and columns the destination. %GB: in the case of asymmetric matrices, are the rows the 'from' locations and the columns the 'to' locations? Best to mention here (it's not explicit in our beast.community tutorials either). %SH: Added.
-For origin-destination predictors, the CSV file is in the form of a two column table with location names alphabetically ordered and predictor values.
+By default, each predictor name will be the same as the name of the file it originates from. Non-pairwise covariates can also be setup as origin and destination predictors in this window. Predictor files are comma-separated value (CSV) files formatted in two different ways depending on the nature of the predictor. For pairwise predictors, the CSV file is in the form of a square matrix with the different locations as column and row names alphabetically ordered, with rows denoting the origin and columns the destination. For origin-destination predictors, the CSV file is in the form of a two column table with location names alphabetically ordered and predictor values.
 You can also specify new predictor names by double clicking on each name, which allows you to enter a name of your choosing.
 }
 
@@ -249,7 +248,7 @@ Be warned that this latter option might lead to large file sizes.\\
 
 8. Specify the priors \\
 
-Click on the ``Priors" tab. Following \cite{travhist}, we use default priors and only specify a Lognormal prior with \code{mu=0} and \code{sigma=10} for the effective population size (where\code{mu} and \code{sigma} represent the log-mean and log-standard deviation), and a Laplace prior with \code{mean=0} and \code{scale=100} for the exponential growth rate parameter.\\ %GB: please mention clearly which parameters of the lognormal distribution are meant with mu and sigma. %SH done.
+Click on the ``Priors" tab. Following \cite{travhist}, we use default priors and only specify a Lognormal prior with \code{mu=1} and \code{sigma=10} for the effective population size (where\code{mu} and \code{sigma} represent the log-mean and log-standard deviation), and a Laplace prior with \code{mean=0} and \code{scale=100} for the exponential growth rate parameter.\\
 
 \ann{BEAST aims to offer sensible default priors when informative prior information is unavailable, most of which can be considered largely uninformative. A wide range of prior distributions is also available to customize each analysis as needed.}
 
@@ -261,8 +260,8 @@ The parameters associated with these transition kernels tend to converge rapidly
 Decrease the weight of these operators to 0.25, but leave the weights of the other transition kernels at their default values, to sample these parameters less frequently so that the analysis gets to spend more time on estimating other parameters of interest.\\
 
 \ann{Transition kernels (called ``operators'' in BEAST) are used to propose new values for each parameter being estimated during the analysis.
-Different combinations of transition kernels can be used to fix certain parameters %PL: this a bit oddly formulated. I would explicitly say that to 'fix' parameters we remove transition kernels on these parameters, in whihc case their starting values serve as the fixed values
-and customize the analysis as needed (e.g. estimating spatial spread on a fixed user-provided tree).}
+Different combinations of transition kernels can be used to customize the analysis as needed. For example, we can remove transition kernels to fix the value of certain parameters to 
+their starting values (e.g. fixing the rate of the molecular clock or estimating spatial spread on a fixed user-provided tree).}
 
 10. Set up the MCMC options and generate the BEAST XML file\\
 
@@ -301,7 +300,7 @@ XML file for a phylogeographic analysis (using a GLM  parameterisation) set up i
 Travel history metadata CSV file \\
 Augmented covariate data files \\
 
-\ann{Example files are provided in the repository {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol3}}. %GB: replace with actual github link. %SH fixed
+\ann{Example files are provided in the repository {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol3}}.
 The example in this protocol assumes an XML file for a phylogeographic GLM reconstruction with new travel history locations not present in the original BEAST XML file generated by BEAUti.
 Covariate files augmented to include the new locations are thus required to accommodate for the increase in location state space.}
 
@@ -335,11 +334,10 @@ java -cp beast.jar dr.app.beast.BeastMain -seed 2020
          282_GISAID_sarscov2_travelHist.xml
 \end{verbatim}
 
-\ann{Here, we run BEAST on the command line using the latest build of BEAST. You can create your own beast.jar file by checking out and compiling the main branch of the \code{beast-mcmc} GitHub repository. We specify a starting seed with the -seed flag, and use the \code{-beagle\_cuda} flag %PL: you mean the -beagle_gpu flag, right?
-to accelerate the likelihood computations using a GPU (only applicable if you have a powerful GPU with sufficient double precision -- or FP64 -- compute performance available).
+\ann{Here, we run BEAST on the command line using the latest build of BEAST. You can create your own beast.jar file by checking out and compiling the main branch of the \code{beast-mcmc} GitHub repository. We specify a starting seed with the -seed flag, and use the \code{-beagle\_gpu} flag to accelerate the likelihood computations using a GPU (only applicable if you have a powerful GPU with sufficient double precision -- or FP64 -- compute performance available).
 This option is recommended when available, as using a GPU reduces runtime by accelerating likelihood computations when performing phylogeographical analyses on large datasets.
 Be sure to check the technical specifications of the GPU you want to use; ideally, at least 3 TFLOPS FP64 performance is recommend.
-We also take advantage of the BEAST checkpointing functionality \cite{onlineBEAST} to save a snapshot of the MCMC run into the travelHist.checkpoint file every 1,000,000 states.
+We also take advantage of the BEAST checkpointing functionality \cite{onlineBEAST} to save a snapshot of the MCMC run into\code{travelHist.checkpoint} every 1,000,000 states.
 This allows us to resume the analysis from the checkpoint in case the run becomes interrupted, or more iterations are required than initially anticipated.}
 
 
@@ -349,14 +347,15 @@ This allows us to resume the analysis from the checkpoint in case the run become
 Standard computer running Linux, MacOS, or Windows. 
 
 \subsubsection*{Software}
-%\hspace{0.5cm}BEAGLE v3+
 
 \hspace{0.5cm}Latest BEAST jar file (v1.10.5) (provided with this protocol)
 
-\hspace{0.5cm}R with package MarkovJumpR %PL: add URL?
+\hspace{0.5cm}R with package MarkovJumpR (\url{https://github.com/beast-dev/MarkovJumpR})
 
 \subsubsection*{Files}
-Trees output from a BEAST phylogeographic analysis with travel history\\
+Trees output with Markov jump annotations from a BEAST phylogeographic analysis with travel history\\
+
+\ann{Example .trees file provided in the repository {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol4}}}.
 
 1. Extract all Markov jump histories for an isolate of interest
 \begin{verbatim}
@@ -373,7 +372,7 @@ Here, we use the TaxaMarkovJumpHistoryAnalyzer application to extract all Markov
 This application takes a trees file with complete Markov jump or state change history as an input (which is being generated by running the XML constructed in the protocol), and outputs the posterior set of spatial trajectories for a taxon or selection of taxa.
 We specify the desired taxon labels through the\code{-taxaToProcess} flag, and specify the annotation name of the discrete trait that was reconstructed using \code{-stateAnnotation}.
 We can also remove a number of trees corresponding to the burn-in using the \code{-burnin} flag, and scale the output results to reflect chronological time instead of node heights using the \code{-msrd} flag by specifying the most recent sampling date.
-An example output file can be found in {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol1}}}
+An example output file can be found in {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol4}}}
 
 2. Load spatial trajectories into R
 \begin{verbatim}
@@ -464,7 +463,7 @@ Here we present some of the standard applications that are commonly used to inte
 
 The MCMC sampling strategy is to construct a Markov chain that (eventually) converges to a stationary distribution, which is the joint density in the case of Bayesian inference.
 For complex models and data sets, it may take considerable time for a chain to converge. We can visually assess the convergence of a BEAST run by inspecting the sampled parameter values across an MCMC analysis.
-To do so, we can load a\code{.log} file into Tracer (\url{https://beast.community/tracer}, \cite{tracer}), %GB: add citation for Tracer publication %SH: done
+To do so, we can load a\code{.log} file into Tracer (\url{https://beast.community/tracer}, \cite{tracer}),
  and visually inspect the trace plot, which shows a time series of the parameter values sampled throughout the analysis.
 A detailed guide on how to use Tracer can be found at \url{https://beast.community/tracer_convergence.html}
 
@@ -516,12 +515,6 @@ Given that the individual may have become infected in any of the visited countri
 A critical assumption for any BEAST analysis is that the data set under consideration constitutes a sample from a measurably evolving population (MEP). MEPs \cite{mep1,mep2} refer to time-stamped sequence data where a sufficient amount of molecular evolution has occurred throughout the sampling period to establish a statistical relationship between genetic divergence and time. A data set conforming to this criteria is said to contain sufficient temporal signal. A lack of temporal signal may result in poor behavior and unreliable divergence time estimates. Popular ways to assess temporal signal include explorations through root-to-tip regression of genetic divergence and sampling times based on maximum likelihood trees \cite{tempest} and permutating tip date labels through date-randomization \cite{tipdate}. Recently, a formal way to assess temporal signal has been developed in a Bayesian framework using model comparison through Bayes factors \cite{bets}. In cases where the temporal signal is deemed insufficiently strong, one can resort to adding more data to increase temporal coverage or using prior knowledge to inform the molecular clock rate or specific divergence times.
 
 Another commonly encountered issue is that of low ESS values for parameters relevant to the analysis. At the end of a BEAST analysis, some parameters may have much higher ESS values associated to them compared to others. One way to increase the ESS values of a parameter is to increase the weight of the relevant operator in order to increase the sampling frequency of the (problematic) parameter (e.g. Protocol 2, step 9). Other ways to obtain more samples -- and as a result increase the ESS value -- include increasing the MCMC chain length and combining the output of multiple independent BEAST analyses, i.e. analysing the same XML file using BEAST but with different starting seeds.
-
-
-\section*{SUGGESTIONS FOR FURTHER ANALYSIS}
-
-This section is optional but I'm open for suggestions. %PL: either drop it or simply invite the reader to go an have a look at the tutorials on beast.community to explore other analyses.
-
 
 
 \section*{ACKNOWLEDGEMENTS}
