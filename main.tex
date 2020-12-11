@@ -3,11 +3,11 @@
 \usepackage[a4paper,margin=1.5in]{geometry}
 \setlength{\parindent}{0pt}
 
-%\title{Using BEAST to Reconstruct Pathogen Spread Incorporating Individual Travel Histories}
+
 \title{Bayesian Phylogeographic Analysis Incorporating Predictors and Individual Travel Histories in BEAST}
-%\title{Reconstructing Pathogen Spread by Incorporating Individual Travel Histories in BEAST}
+
 \author{Samuel L. Hong}
-%GB: other authors: MAS, GB, PL? anyone else?
+
 
 \usepackage{graphicx}
 \usepackage{url}
@@ -37,7 +37,7 @@
 \begin{adjustwidth}{0.5cm}{0.5cm}
 Advances in sequencing technologies have tremendously reduced the time and costs associated with sequence generation, making genomic data an important asset for routine public health practices. Within this context, phylogenetic and phylogeographic inference has become a popular method to study disease transmission.
 In a Bayesian context, these approaches have the benefit of accommodating phylogenetic uncertainty and popular implementations provide the possibility to parameterise the transition rates between locations as a function of epidemiological and ecological data to reconstruct spatial spread while simultaneously identifying the main factors impacting the spatial spread dynamics.
-Recent developments enable to make use of additional metadata in the form of travel history data of infected individuals in the reconstruction of pathogen spread, offering increased inference accuracy and mitigating sampling bias.
+Recent developments enable researchers to make use of travel history data of infected individuals in the reconstruction of pathogen spread, offering increased inference accuracy and mitigating sampling bias.
 We here describe a detailed workflow on how to reconstruct the spatial spread of a pathogen through Bayesian phylogeographic analysis in discrete space using these novel approaches implemented in BEAST.
 The individual protocols focus on how to incorporate molecular data, covariates of spread and individual travel history data into the analysis.
 \end{adjustwidth}
@@ -55,14 +55,8 @@ BEAST is widely used in the field of phylodynamics and molecular epidemiology of
 Here, we focus on Bayesian phylogeographic inferences that aim to answer the question of ``how did an epidemic spread through space and time?" through jointly reconstructing the evolutionary and geographical history of a pathogen population in the form of (geographically) annotated time-scaled phylogenies.
 Specifically, we focus on the discrete model in which transition rates are function of potential predictors of spatial spread according to a simple generalized linear model (GLM).
 Such an approach has previously enabled researchers to, for example, assess the impact of air travel on the global spread of influenza \cite{glm}.
-Importantly, the GLM formulation generally also offers a sparser parameterization of the spatial transition process as it avoids having to estimate all estimate all pairwise transitions rates, which scale quadratically with the number of locations and can be difficult to inform. \\
-%PL: deleted the sentence below to avoid redundnacy
-%Because of the flexibility of this framework, Bayesian phylogeographic analyses in BEAST have enjoyed wide success in uncovering the origins of viral lineages \cite{hiv} and characterizing pathogen spread to inform public health response \cite{ebola}.
+Importantly, the GLM formulation generally also offers a sparser parameterisation of the spatial transition process as it avoids having to estimate all estimate all pairwise transitions rates, which scale quadratically with the number of locations and can be difficult to inform. \\
 
-
-%PL: the text below is also a bit repetitive partially due to some edits. I expanded a bit on the TH instead
-%BEAST constitutes a popular software package to model the spatial spread of a pathogen between discrete locations using discrete trait analysis (DTA) through Bayesian inference.
-%DTA estimates the probability of pathogen transmission between two locations using a continuous--time Markov chain (CTMC) model analogous to those used for characterising nucleotide substitution probabilities \cite{dta}.
 While phylogeographic analyses incorporate the location of sampling as a discrete trait associated with each pathogen genome, it is possible that sampled patients had recently travelled to different locations.
 In fact, during epidemics travellers may be specifically screened if they return from areas with high incidence. This has been the case for SARS-CoV-2 and it has motivated the development of model extensions that incorporate the specific times and locations of travel \cite{travhist}. This may be particularly useful for capturing diversity in the locations that remain under-sampled, and as such, it can mitigate bias associated with disparate sampling efforts.
 These are important considerations because the computationally convenient ancestral reconstructions are highly sensitive to sampling bias. \\
@@ -96,7 +90,7 @@ This protocol describes how to construct a SARS-CoV-2 MSA from sequences downloa
 \hspace{0.5cm}The latest Aliview \cite{aliview} version (v1.26 used in this protocol).
 
 \hspace{0.5cm}A terminal emulator running a standard Unix shell. \\
-\ann{For Windows, a BASH shell can be installed through the Windows Subsystem for Linux. For more information, see \url{https://docs.microsoft.com/en-us/windows/wsl/}}
+\ann{For Windows, a BASH shell can be installed through the Windows Subsystem for Linux. For more information, see {\upshape\url{https://docs.microsoft.com/en-us/windows/wsl/}}}.
 
 \subsubsection*{Files}
 \hspace{0.5cm}A list of GISAID accession numbers/identifiers.
@@ -135,12 +129,12 @@ mafft --thread -1 --nomemsave gisaid_selection.fasta > gisaid_aln.fasta
 
 \ann{To remove potential sequencing errors in the error-prone 5' and 3' ends of the virus, we include the reference sequences for the 5' and 3' UTRs of the SARS-CoV-2 genome (see example files).
 We do this so that we can later trim these regions from the final alignment.
-We concatenate these sequences to the FASTA file containing our genomes of interest, and align all sequences using MAFFT.} %GB: how about mentioning here how many positions are in this alignment (i.e. after running MAFFT)? could be useful for people going through the steps; alternatively, how about providing this alignment in supplementary material? %SH: We can't provide the alignment because we are not allowed to share GISAID data outside of GISAID per their rules .
+We concatenate these sequences to the FASTA file containing our genomes of interest, and align all sequences using MAFFT.}
 
 4. Manually trim UTRs in the MSA using Aliview\\
 
-In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu. %GB: I think a screenshot (start of the alignment will suffice) could be useful here; if it's visually more appealing (i.e. depending on how it plays out with figure placement within the text), please also include a screenshot of the situation at the end of the alignment %SH done
-Remove the now-empty reference sequences and save the trimmed MSA (Figure \ref{fig:aliview}).\\ %GB: it may also prove useful to explicitly mention here how many sites were trimmed at both ends of the alignment %SH: Added in the figure caption
+In Aliview, visually identify the UTR sequences and manually select the corresponding sites. Remove the selected sites using the Edit menu.
+Remove the now-empty reference sequences and save the trimmed MSA (Figure \ref{fig:aliview}).\\
 
 \begin{figure}[!ht]
     \centering
@@ -176,7 +170,7 @@ In this example, we will use the MSA generated in Protocol 1 to set up a phyloge
 \hspace{0.5cm}Covariate matrices in CSV format\\
 
 \ann{Example metadata and covariate files available at\\
-\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol2}}
+{\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol2}}}
 
 1. Import the MSA into BEAUti\\
 
@@ -235,7 +229,7 @@ For more information on the different molecular clock models available in BEAST:
 
 6. Specify a demographic model\\
 
-Click on the ``Trees" tab to specify the Tree prior. Following \cite{travhist}, we specify an exponential growth coalescent model parameterized with a growth rate parameter.
+Click on the ``Trees" tab to specify the Tree prior. Following \cite{travhist}, we specify an exponential growth coalescent model parameterised with a growth rate parameter.
 We refer to \url{http://beast.community/tree_priors} for a more detailed explanation on a subset of the available coalescent models in BEAST. \\
 
 \ann{By default, BEAST will initialize the analysis with a randomly generated starting tree. It is also possible to start the analysis from a user-specified time-scaled phylogeny. This is usually done to reduce the burn-in time required for the tree topologies to converge. Specify a starting tree by clicking on ``Import Data" under the ``File" menu, to load a phylogenetic tree in Nexus format into BEAUti.}
@@ -248,7 +242,7 @@ Be warned that this latter option might lead to large file sizes.\\
 
 8. Specify the priors \\
 
-Click on the ``Priors" tab. Following \cite{travhist}, we use default priors and only specify a Lognormal prior with \code{mu=1} and \code{sigma=10} for the effective population size (where\code{mu} and \code{sigma} represent the log-mean and log-standard deviation), and a Laplace prior with \code{mean=0} and \code{scale=100} for the exponential growth rate parameter.\\
+Click on the ``Priors" tab. Following \cite{travhist}, we use default priors and only specify a Lognormal prior with\code{mu=1} and\code{sigma=10} for the effective population size (where\code{mu} and \code{sigma} represent the log-mean and log-standard deviation), and a Laplace prior with\code{mean=0} and\code{scale=100} for the exponential growth rate parameter.\\
 
 \ann{BEAST aims to offer sensible default priors when informative prior information is unavailable, most of which can be considered largely uninformative. A wide range of prior distributions is also available to customize each analysis as needed.}
 
@@ -300,7 +294,8 @@ XML file for a phylogeographic analysis (using a GLM  parameterisation) set up i
 Travel history metadata CSV file \\
 Augmented covariate data files \\
 
-\ann{Example files are provided in the repository {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol3}}.
+\ann{Example files are provided in the repository\\
+{\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol3}}.
 The example in this protocol assumes an XML file for a phylogeographic GLM reconstruction with new travel history locations not present in the original BEAST XML file generated by BEAUti.
 Covariate files augmented to include the new locations are thus required to accommodate for the increase in location state space.}
 
@@ -323,6 +318,8 @@ The metadata file is in CSV format and must contain the following columns: ``nam
     \caption{Travel history metadata. The metadata file must contain the columns ``name", ``travelHistory", ``travelDays", ``priorMean" and ``priorStdev". Other columns can be included but will not be parsed to update the XML. For sequences where either exact travel dates are not available, we set the ``travelDays" column to \code{NA}, such that the MCMC samples from a range of possible travel dates with a Gaussian prior distribution of mean ``priorMean" (in units of days) and standard deviation ``priorStdev". For sequences were exact travel dates are available, we set the prior columns to \code{NA}.}
     \label{fig:travmeta}
 \end{figure}
+
+\clearpage
 
 2. Run the updated XML file using BEAST
 \begin{verbatim}
@@ -355,7 +352,8 @@ Standard computer running Linux, MacOS, or Windows.
 \subsubsection*{Files}
 Trees output with Markov jump annotations from a BEAST phylogeographic analysis with travel history\\
 
-\ann{Example .trees file provided in the repository {\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol4}}}.
+\ann{Example .trees file provided in the repository\\ 
+{\upshape\url{https://github.com/hongsamL/travHistProtocol/tree/main/files/Protocol4}}}.
 
 1. Extract all Markov jump histories for an isolate of interest
 \begin{verbatim}
@@ -469,15 +467,15 @@ A detailed guide on how to use Tracer can be found at \url{https://beast.communi
 
 \subsection*{Effective sample size and parameter estimates}
 
-Loading a .log file in Tracer will also show the effective sample size (ESS) values and estimates for each model parameter.
-Note that ESS values are only defined for continuous parameters that are being estimated.
 A characteristic of inference through MCMC is that the samples collected tend to be correlated.
 This in turn poses a challenge, since having a large number of samples does not guarantee a considerable reduction of the uncertainty in our posterior estimates.
-A way to control for this is to look at the ESS value associated with parameter estimation.
+A way to control for this is to look at the effective sample size (ESS) value associated with parameter estimation.
 The ESS of a parameter sampled from an MCMC method is the number of effectively independent draws from the posterior distribution that the Markov chain is equivalent to.
 ESS values are expected to increase as an increasing number of samples are collected.
 Higher ESS values will result in more precise posterior estimates but require higher computational resources.
-Tracer will automatically calculate the ESS for all parameters part of the log file, and flag values above100 and 200 (preferable).
+Loading a .log file in Tracer will also show the ESS values and estimates for each model parameter.
+Note that ESS values are only defined for continuous parameters that are being estimated.
+Tracer will automatically calculate the ESS for all parameters part of the log file, and flag values above 100 and 200 (preferable).
 
 \subsection*{Summarizing trees and phylogeographic estimates}
 
@@ -491,17 +489,16 @@ In some data sets, the posterior support for all nodes in a tree is such that ma
 \subsection*{Background Information}
 
 Modern models for phylogeographic inference can be broadly categorized into two classes or types, depending on the assumptions used to model the spatial spread of a pathogen.
-Structured coalescent approaches model movement in terms of a migration matrix, and relate migration rates with a population sizes in a location and therefore involves population size dynamics estimates for each location \cite{basta,mascot}.
+Structured coalescent approaches model movement in terms of a migration matrix, and relate migration rates with population sizes in a location and therefore involve population size dynamics estimates for each location \cite{basta,mascot}.
 On the other hand, diffusion approaches consider sampling locations as observed traits independent from the tree-generative process, and model movement across space using a random walk process \cite{dta,rw}.
 Structured coalescent models are more robust to sampling bias, but due to the difficulty to scale this approach to larger datasets diffusion methods remain popular.
-Currently, BEAST v1.10.5 focuses on providing phylogeographic inference using CTMC models for discrete location data.
+Currently, BEAST v1.10.5 focuses on providing phylogeographic inference using CTMC models for discrete location data.\\
 
-Diffusion models for phylogeographic inference can be further categorized depending on the location data type used.
-Discrete locations are parameterised using the same CTMC models as used for the sequence substitution process \cite{dta}.
+Diffusion models for phylogeographic inference can be further categorized depending on the location data type used.Discrete locations are parameterised using the same CTMC models as used for the sequence substitution process \cite{dta}.
 In contrast, continuous locations are modeled using Brownian diffusion-based random walk models \cite{rw}.
 Much of the genomic data collected has a spatial resolution coarser than latitude and longitude, which restricts phylogeographic applications to the discrete approach.
 
-The CTMC parameterisation models movement between $K$ discrete locations in terms of a $K \times K$ infinitesimal rate matrix $\Lambda$, where $\Lambda_{ij}$ is the instantaneous movement rate from location $i$ to $j$. Parametrizations are available for both symmetrical and asymmetrical transition rates, and extensions adopt Bayesian Stochastic Search Variable Selection (BSSVS) to limit the number of rates to only those that adequately explain the phylogenetic diffusion process. The GLM parametrization models the transition rates as a log linear combination of $P$ of potential explanatory predictors $(x_{ij1}, \dots, x_{ijP})$, with corresponding coefficients $(\beta_1, ..., \beta_P )$ and indicator variables $(\delta_1, ..., \delta_P )$ such that log$(\Lambda_{ij}) = \sum_{p=1}^P \beta_p \delta_p x_{ijp}$. This model specification allows us to use BSSVS to explore the space of $2^P$ predictor combinations and obtain a posterior probability on the indicator variables in order to determine the support for inclusion of each predictor in the model.
+The CTMC parameterisation models movement between $K$ discrete locations in terms of a $K \times K$ infinitesimal rate matrix $\Lambda$, where $\Lambda_{ij}$ is the instantaneous movement rate from location $i$ to $j$. Parameterisation are available for both symmetrical and asymmetrical transition rates, and extensions adopt Bayesian Stochastic Search Variable Selection (BSSVS) to limit the number of rates to only those that adequately explain the phylogenetic diffusion process. The GLM parameterisation models the transition rates as a log linear combination of $P$ of potential explanatory predictors $(x_{ij1}, \dots, x_{ijP})$, with corresponding coefficients $(\beta_1, ..., \beta_P )$ and indicator variables $(\delta_1, ..., \delta_P )$ such that log$(\Lambda_{ij}) = \sum_{p=1}^P \beta_p \delta_p x_{ijp}$. This model specification allows us to use BSSVS to explore the space of $2^P$ predictor combinations and obtain a posterior probability on the indicator variables in order to determine the support for inclusion of each predictor in the model.\\
 
 Incorporating individual travel history data does not require the use of a GLM and can be used with standard CTMC models \cite{dta}) by augmenting the available dataset to include ancestral nodes associated with a known state but not necessarily with a known sequence \cite{travhist}.
 This provides a richer source of information for phylogeographic reconstructions as compared to only using sampling location.
@@ -511,7 +508,6 @@ Given that the individual may have become infected in any of the visited countri
 
 
 \section*{CRITICAL PARAMETERS AND TROUBLESHOOTING}
-
 A critical assumption for any BEAST analysis is that the data set under consideration constitutes a sample from a measurably evolving population (MEP). MEPs \cite{mep1,mep2} refer to time-stamped sequence data where a sufficient amount of molecular evolution has occurred throughout the sampling period to establish a statistical relationship between genetic divergence and time. A data set conforming to this criteria is said to contain sufficient temporal signal. A lack of temporal signal may result in poor behavior and unreliable divergence time estimates. Popular ways to assess temporal signal include explorations through root-to-tip regression of genetic divergence and sampling times based on maximum likelihood trees \cite{tempest} and permutating tip date labels through date-randomization \cite{tipdate}. Recently, a formal way to assess temporal signal has been developed in a Bayesian framework using model comparison through Bayes factors \cite{bets}. In cases where the temporal signal is deemed insufficiently strong, one can resort to adding more data to increase temporal coverage or using prior knowledge to inform the molecular clock rate or specific divergence times.
 
 Another commonly encountered issue is that of low ESS values for parameters relevant to the analysis. At the end of a BEAST analysis, some parameters may have much higher ESS values associated to them compared to others. One way to increase the ESS values of a parameter is to increase the weight of the relevant operator in order to increase the sampling frequency of the (problematic) parameter (e.g. Protocol 2, step 9). Other ways to obtain more samples -- and as a result increase the ESS value -- include increasing the MCMC chain length and combining the output of multiple independent BEAST analyses, i.e. analysing the same XML file using BEAST but with different starting seeds.
