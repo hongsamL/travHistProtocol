@@ -239,7 +239,7 @@ def make_ancestral_trait_elements(xml,hist):
     ancestralTree = et.Element('ancestralTraitTreeModel',id='ancestralTraitTreeModel')
     ancestralTree.append(et.Element('treeModel',idref='treeModel'))
 
-    for i,(name,days,pr_mean,pr_stdev) in enumerate(zip(hist['name'],hist['travelDays'],hist['priorMean'],hist['priorSTDEV'])):
+    for i,(name,days,pr_mean,pr_stdev) in enumerate(zip(hist['name'],hist['travelDays'],hist['priorMean'],hist['priorStdev'])):
         anc_name = name + "_ancestor_taxon"
         # create ancestor element
         anc = et.Element("ancestor")
