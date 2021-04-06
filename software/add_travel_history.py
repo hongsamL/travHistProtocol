@@ -51,12 +51,12 @@ def get_travel_locations(hist):
     return list(set(hist['travelHistory']))
 
 # make taxa element for ancestral taxa
-def make_ancestral_taxa(xml,hist):
+def make_ancestral_taxa(xml,hist,trait_name):
     names = hist['name']
     anc_locs = hist['travelHistory']
     ancestral_taxa = et.Element('taxa',id='ancestralTaxa')
     for name,loc in zip(names,anc_locs):
-        attr = et.Element('attr',name='location')
+        attr = et.Element('attr',name=trait_name)
         attr.text = loc
         taxon = et.Element("taxon",id=name +'_ancestor_taxon')
         taxon.append(attr)
@@ -72,7 +72,8 @@ def make_all_taxa():
 
 def add_new_taxa_elements(xml,hist):
     root = xml.getroot()
-    anc_taxa = make_ancestral_taxa(xml,hist)
+    trait_name = get_trait_name(xml)
+    anc_taxa = make_ancestral_taxa(xml,hist,trait_name)
     alltaxa = make_all_taxa()
     # add Ancestral Taxa element to xml tree
     root.insert(root.index(root.find("taxa"))+1,anc_taxa)
@@ -251,6 +252,7 @@ def make_ancestral_trait_elements(xml,hist):
         ancestralPath.append(et.Element("taxon", idref=name))
         # add travel dates
         try:
+            assert days!="na"
             days = int(days)
             ancestralPath.append(et.Element("parameter", id=f"time{i+1}",lower='0.0',
                                               value=f"{round(days/365,10)}"))
