@@ -195,9 +195,12 @@ def edit_number_of_rates(xml,glm_covariates = None):
         (root.find("generalSubstitutionModel")
             .find('rates')
             .find('parameter')).attrib['dimension'] = str(int(num_rates))
-        (root.find("generalSubstitutionModel")
-            .find('rateIndicator')
-            .find('parameter')).attrib['dimension'] = str(int(num_rates))
+        try:
+            (root.find("generalSubstitutionModel")
+                .find('rateIndicator')
+                .find('parameter')).attrib['dimension'] = str(int(num_rates))
+        except:
+            pass
     return
 
 def edit_markov_jumps_tree_likelihood(xml):
@@ -215,6 +218,8 @@ def edit_markov_jumps_tree_likelihood(xml):
     if check_DTA(xml) == 'asymmetric':
         loc_root_freq = mjumps.find("frequencyModel").find('frequencies').find("parameter")
         loc_root_freq.attrib['dimension'] = str(len(get_all_locations(xml)))
+
+    mjumps.attrib["useAmbiguities"] = "true"
     return
 
 def check_DTA(xml):
@@ -295,6 +300,15 @@ def add_ancestral_trait_elements(xml,hist):
         filelog.append(p)
     return
 
+def add_ancestral_trait_branches(xlm):
+    anc_branches = et.Element("ancestralTraitBranchRates",id="anc.default.branchRates")
+    anc_branches.append(et.Element("ancestralTraitTreeModel", idref='ancestralTraitTreeModel'))
+    anc_branches.append(et.Element("discretizedBranchRates", idref='default.branchRates'))
+
+    root = xml.getroot()
+    root.insert(root.index(root.find('ancestralTraitTreeModel'))+1,anc_branches)
+    return
+
 def edit_tree_logs(xml):
     trait_name = get_trait_name(xml)
     # edit markov jump history tree logs
@@ -341,11 +355,42 @@ def edit_tree_logs(xml):
         if i.attrib['name'] == 'rate':
             treeModel_trees.append(deepcopy(i))
     treeModel_trees.append(et.Element("joint",idref='joint'))
+    # replace branch rates wiht ancestralTraitBranchRates
+    rate_trait = [x for x in traits if (x.attrib['tag'] == "default.rate")][0]
+    discr_br = rate_trait.find("discretizedBranchRates")
+    rate_trait.remove(discr_br)
+    rate_trait.append(et.Element("ancestralTraitBranchRates", idref="anc.default.branchRates"))
 
     xml.getroot().find("mcmc").append(et.Comment(" write non-augmented trees "))
     xml.getroot().find("mcmc").append(treeModel_trees)
 
     return
+
+def edit_bssvs_poisson(xml):
+    dta_model = check_DTA(xml)
+    num_locs = len(get_all_locations(xml))
+    trait_name= get_trait_name(xml)
+    poissons = xml.getroot().find("mcmc").find("joint").find("prior").findall("poissonPrior")
+    hasPrior = False
+    if len(poissons)>=1:
+        for p in poissons:
+            s = p.find("statistic")
+            try:
+                if s.attrib['idref'] == f"{trait_name}.nonZeroRates":
+                    hasPrior=True
+                    break
+            except:
+                continue
+    if dta_model == 'glm':
+        return
+    elif dta_model == 'symmetric' and hasPrior == True:
+        return
+
+    elif dta_model == 'asymmetric' and hasPrior == True:
+        p.attrib['mean'] = str(num_locs -1)+".0"
+
+        return
+
 
 def write_xml(xml,filename):
     xml_str = et.tostring(xml,pretty_print=True).decode()
@@ -372,7 +417,9 @@ if __name__ == "__main__":
     add_new_locs(xml,trav_hist)
     edit_number_of_rates(xml,glm_covariates=args.covariate)
     add_ancestral_trait_elements(xml,trav_hist)
+    add_ancestral_trait_branches(xml)
     edit_markov_jumps_tree_likelihood(xml)
     edit_tree_logs(xml)
+    edit_bssvs_poisson(xml)
     write_xml(xml,args.out)
     print(f"Done writing file to {args.out}")
