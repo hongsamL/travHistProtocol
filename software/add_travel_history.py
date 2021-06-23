@@ -357,8 +357,10 @@ def edit_tree_logs(xml):
     treeModel_trees.append(et.Element("joint",idref='joint'))
     # replace branch rates wiht ancestralTraitBranchRates
     rate_trait = [x for x in traits if (x.attrib['tag'] == "default.rate")][0]
+
     discr_br = rate_trait.find("discretizedBranchRates")
-    rate_trait.remove(discr_br)
+    if discr_br is not None:
+        rate_trait.remove(discr_br)
     rate_trait.append(et.Element("ancestralTraitBranchRates", idref="anc.default.branchRates"))
 
     xml.getroot().find("mcmc").append(et.Comment(" write non-augmented trees "))
