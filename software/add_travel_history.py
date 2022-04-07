@@ -142,7 +142,7 @@ def transform_matrix(name,values):
     lower_tri = values.T[upper_tri_indices]
     vector_mat = np.concatenate([upper_tri,lower_tri])
     if 0 in vector_mat:
-        x = input(f"The matrix '{name}' contains 0 entries, covariate will not be transformed, press y to continue: ")
+        x = input(f"The matrix '{name}' contains entries with 0, covariate will not be transformed, press y to continue: ")
         if x in ['y','Y']:
             return vector_mat
     else:
@@ -212,7 +212,7 @@ def edit_markov_jumps_tree_likelihood(xml):
                                                 idref='ancestralTraitTreeModel'))
     mjumps.remove(tm)
     # remove mj counts
-    counts = [x for x in mjumps.findall("parameter") if "count" in x.attrib['id']][0]
+    counts = [x for x in mjumps.findall("parameter") if ".count" in x.attrib['id']][0]
     mjumps.remove(counts)
 
     if check_DTA(xml) == 'asymmetric':
@@ -230,6 +230,8 @@ def check_DTA(xml):
         return 'asymmetric'
     elif "-- GLM substitution" in xmlstr:
         return 'glm'
+    else:
+        raise Exception("The script can't detect a Discrete Trait Substitution model")
 
 def check_mj(xml):
     assert xml.getroot().findall("markovJumpsTreeLikelihood") != [],\
@@ -332,7 +334,7 @@ def edit_tree_logs(xml):
     # remove markov jumps counts from tree
     empirical_trees = [x for x in xml.getroot().find("mcmc").findall("logTree") \
                        if "history" not in x.attrib['fileName']][0]
-    counts = [x for x in trees.findall("trait") if "count" in x.attrib['name']][0]
+    counts = [x for x in trees.findall("trait") if ".count" in x.attrib['name']][0]
     empirical_trees.remove(counts)
     #replace treemodel with ancestralTraitTreeModel
     tmodel2 = empirical_trees.find("treeModel")
@@ -412,10 +414,14 @@ if __name__ == "__main__":
     parser.add_argument("--covariate",default=None,action='append',help='updated covariate matrix')
     args=parser.parse_args()
 
+    print('\nLoading travel history metadata')
     trav_hist = load_hist(args.hist)
+    print('Loading travel XML')
     xml = load_xml(args.xml)
     assert check_sequences(xml,trav_hist), "All names in travel history not found in xml file"
+    print('Adding travel history ancestral taxa')
     add_new_taxa_elements(xml,trav_hist)
+    print('Updating location traits')
     add_new_locs(xml,trav_hist)
     edit_number_of_rates(xml,glm_covariates=args.covariate)
     add_ancestral_trait_elements(xml,trav_hist)
