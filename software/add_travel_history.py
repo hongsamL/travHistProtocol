@@ -316,18 +316,19 @@ def edit_tree_logs(xml):
     # edit markov jump history tree logs
     try:
         history_trees = [x for x in xml.getroot().find("mcmc").findall("logTree") if ("history" in x.attrib['fileName'])][0]
+        history_trees.append(loc_states)
+        #replace treemodel with ancestralTraitTreeModel
+        tmodel = history_trees.find("treeModel")
+        history_trees.remove(tmodel)
+        history_trees.append(et.Element("ancestralTraitTreeModel",idref="ancestralTraitTreeModel"))
     except:
         print("Can't find tree Markov jump history logTree, make sure you added in Beauti")
-        return
+        
 
     # add trait annotation to tree history log
     loc_states = et.Element("trait",name=f'{trait_name}.states', tag=f'{trait_name}')
     loc_states.append(et.Element('markovJumpsTreeLikelihood',idref=f"{trait_name}.treeLikelihood"))
-    history_trees.append(loc_states)
-    #replace treemodel with ancestralTraitTreeModel
-    tmodel = history_trees.find("treeModel")
-    history_trees.remove(tmodel)
-    history_trees.append(et.Element("ancestralTraitTreeModel",idref="ancestralTraitTreeModel"))
+    
     # edit regular tree log file
     trees = [x for x in xml.getroot().find("mcmc").findall("logTree") \
                        if "history" not in x.attrib['fileName']][0]
